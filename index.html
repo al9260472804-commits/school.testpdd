@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Викторина по правилам дорожного движения — Яндекс Формы</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Временные стили для аватара */
+        .g-avatar__image-placeholder {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="g-root g-root_theme_dark">
+    <noscript>
+        <style>#root { display: none; }</style>
+        <div class="layout-warning__container">
+            <div class="layout-warning__info">
+                <h1 class="layout-warning__sub-title">Яндекс Формы</h1>
+                <h2 class="layout-warning__title">У вас отключён JavaScript</h2>
+                <p class="layout-warning__description">
+                    Для функционирования сайта необходимо включить JavaScript в настройках браузера и перезагрузить страницу.
+                </p>
+            </div>
+        </div>
+    </noscript>
+    
+    <div id="root">
+        <div class="Layout">
+            <header class="Header">
+                <div class="Header-LogoSection">
+                    <a href="#" aria-label="Яндекс Формы" class="Logo-LogoLink">
+                        <span style="display: flex; align-items: center; color: #fff; font-weight: bold; font-size: 18px;">
+                            <div style="width: 24px; height: 24px; background: #FC0; border-radius: 50%; margin-right: 8px;"></div>
+                            Яндекс Формы
+                        </span>
+                    </a>
+                </div>
+                <div class="Header-UserSection">
+                    <div class="yc-user-dropdown-avatar" role="button" tabindex="0" title="LebedevArs2011">
+                        <div class="g-avatar" title="LebedevArs2011" role="img">
+                            <div class="g-avatar__image-placeholder">LA</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="Layout-Content">
+                <aside class="Layout-LeftAside"></aside>
+                
+                <main class="Layout-Main">
+                    <!-- Блок запуска игры -->
+                    <div class="game-launcher">
+                        <button id="launch-game-btn" type="button" class="g-button g-button_view_action">
+                            <span class="g-button__text">🎮 Выполнить: Запустить игру "Бегущий динозавр"</span>
+                        </button>
+                        <p class="game-description">После прохождения викторины выполните это задание</p>
+                    </div>
+                    
+                    <!-- Основная форма викторины -->
+                    <div class="SurveyPage SurveyPage_hasRequired" id="quiz-form">
+                        <h1 class="SurveyPage-Name">Викторина по правилам дорожного движения</h1>
+                        
+                        <div class="SurveyPage-Content">
+                            <!-- Вопрос 1: ФИО -->
+                            <div class="QuestionMarkup TextQuestion Question">
+                                <div class="QuestionMarkup-Column QuestionMarkup-Column_column_left">
+                                    <h3 class="QuestionLabel QuestionLayout-Label">
+                                        <span class="QuestionLabel-Required" aria-hidden="true">*</span>
+                                        <span class="QuestionLabel-Text">Введите ФИО и класс</span>
+                                        <span class="sr-only">Обязательное поле</span>
+                                    </h3>
+                                </div>
+                                <div class="QuestionMarkup-Column QuestionMarkup-Column_column_right">
+                                    <div>
+                                        <span class="g-text-input">
+                                            <span class="g-text-input__content">
+                                                <input class="g-text-input__control" 
+                                                       id="fio-input" 
+                                                       placeholder="Иванов Иван Иванович, 5А" 
+                                                       required>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Вопрос 2 -->
+                            <div class="QuestionMarkup RadioQuestion Question">
+                                <div class="QuestionMarkup-Column QuestionMarkup-Column_column_left">
+                                    <h3 class="QuestionLabel QuestionLayout-Label">
+                                        <span class="QuestionLabel-Required" aria-hidden="true">*</span>
+                                        <span class="QuestionLabel-Text">
+                                            Если светофор на перекрестке сломан и мигает желтым светом, пешеход может начать переход, просто убедившись, что машины остановились?
+                                        </span>
+                                        <span class="sr-only">Обязательное поле</span>
+                                    </h3>
+                                </div>
+                                <div class="QuestionMarkup-Column QuestionMarkup-Column_column_right">
+                                    <div>
+                                        <div class="g-radio-group" role="radiogroup">
+                                            <label class="g-control-label g-radio">
+                                                <span class="g-control-label__indicator g-radio__indicator">
+                                                    <span class="g-radio__disc"></span>
+                                                    <input name="question1" type="radio" value="yes">
+                                                    <span class="g-radio__outline"></span>
+                                                </span>
+                                                <span class="g-control-label__text">Да</span>
+                                            </label>
+                                            <label class="g-control-label g-radio">
+                                                <span class="g-control-label__indicator g-radio__indicator">
+                                                    <span class="g-radio__disc"></span>
+                                                    <input name="question1" type="radio" value="no">
+                                                    <span class="g-radio__outline"></span>
+                                                </span>
+                                                <span class="g-control-label__text">Нет</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Вопрос 3 со знаком -->
+                            <div class="QuestionMarkup RadioQuestion Question">
+                                <div class="QuestionMarkup-Column QuestionMarkup-Column_column_left">
+                                    <h3 class="QuestionLabel QuestionLayout-Label">
+                                        <span class="QuestionLabel-Required" aria-hidden="true">*</span>
+                                        <span class="QuestionLabel-Text">Что означает этот знак?</span>
+                                        <span class="sr-only">Обязательное поле</span>
+                                    </h3>
+                                </div>
+                                <div class="QuestionMarkup-Column QuestionMarkup-Column_column_right">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Road_sign_3.1_RU.svg/120px-Road_sign_3.1_RU.svg.png" 
+                                         class="QuestionLayout-Image" 
+                                         alt="Дорожный знак 'Въезд запрещен'">
+                                    <div>
+                                        <div class="g-radio-group" role="radiogroup">
+                                            <label class="g-control-label g-radio">
+                                                <span class="g-control-label__indicator g-radio__indicator">
+                                                    <span class="g-radio__disc"></span>
+                                                    <input name="question2" type="radio" value="enter-prohibited">
+                                                    <span class="g-radio__outline"></span>
+                                                </span>
+                                                <span class="g-control-label__text">Въезд запрещен</span>
+                                            </label>
+                                            <label class="g-control-label g-radio">
+                                                <span class="g-control-label__indicator g-radio__indicator">
+                                                    <span class="g-radio__disc"></span>
+                                                    <input name="question2" type="radio" value="dead-end">
+                                                    <span class="g-radio__outline"></span>
+                                                </span>
+                                                <span class="g-control-label__text">Впереди тупик</span>
+                                            </label>
+                                            <label class="g-control-label g-radio">
+                                                <span class="g-control-label__indicator g-radio__indicator">
+                                                    <span class="g-radio__disc"></span>
+                                                    <input name="question2" type="radio" value="parking-prohibited">
+                                                    <span class="g-radio__outline"></span>
+                                                </span>
+                                                <span class="g-control-label__text">Стоянка запрещена</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Кнопка отправки -->
+                            <div class="SurveyPage-Buttons">
+                                <button id="submit-quiz-btn" type="button" class="g-button g-button_view_action SurveyPage-Button">
+                                    <span class="g-button__text">Отправить ответы</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                
+                <aside class="Layout-RightAside">
+                    <div class="SideColumnAdv">
+                        <div class="SideColumnAdv-line">
+                            <div class="ad-sidebar">
+                                <p>Реклама Яндекс</p>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+            
+            <footer class="Footer">
+                <div class="Footer-Link">
+                    Создано пользователем с помощью&nbsp;
+                    <a href="#" class="g-link">Яндекс Форм</a>
+                </div>
+                <div class="Footer-Link">
+                    <button id="feedback-btn" class="g-button" type="button">
+                        <span class="g-button__text">Обратная связь</span>
+                    </button>
+                </div>
+                <div class="Footer-Link">
+                    ©&nbsp;<span id="current-year">2024</span>&nbsp;<a href="https://ya.ru/" class="g-link">Яндекс</a>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Модальное окно для игры -->
+    <div id="game-modal" class="game-modal">
+        <div class="game-modal-content">
+            <div class="game-modal-header">
+                <h2>🎮 Бегущий динозавр</h2>
+                <button id="close-game-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="game-container">
+                <canvas id="game-canvas"></canvas>
+                <div id="game-ui">
+                    <div class="score-container">
+                        <div id="score">0</div>
+                        <div id="high-score">Рекорд: 0</div>
+                    </div>
+                    <button id="pause-btn" type="button">⏸</button>
+                </div>
+                <div id="menu-screen">
+                    <h3>Бегущий динозавр</h3>
+                    <div class="score-display">
+                        Рекорд: <span id="menu-high-score">0</span>
+                    </div>
+                    <button id="start-btn" class="btn" type="button">▶️ НАЧАТЬ ИГРУ</button>
+                </div>
+                <div id="pause-screen">
+                    <h3>⏸ ПАУЗА</h3>
+                    <div class="score-display">
+                        Счет: <span id="pause-score">0</span>
+                    </div>
+                    <button id="resume-btn" class="btn" type="button">▶️ ПРОДОЛЖИТЬ</button>
+                    <button id="restart-btn" class="btn" type="button">🔄 НАЧАТЬ ЗАНОВО</button>
+                    <button id="menu-btn" class="btn" type="button">🏠 ЗАКРЫТЬ</button>
+                </div>
+                <div id="new-record">НОВЫЙ РЕКОРД! 🎉</div>
+            </div>
+            <div class="game-instructions">
+                <p>👆 Правая часть экрана - Прыжок</p>
+                <p>👇 Левая часть экрана - Пригнуться</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно успешной отправки -->
+    <div id="success-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✅ Спасибо!</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Ваши ответы успешно отправлены.</p>
+                <p>Теперь вы можете выполнить практическое задание — сыграть в игру "Бегущий динозавр".</p>
+                <p class="quiz-result" id="quiz-result"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-ok-btn" class="g-button">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
