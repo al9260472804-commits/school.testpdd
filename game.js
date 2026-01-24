@@ -1,3 +1,13 @@
+// Загружаем фото для препятствий
+const obstacleImages = [
+    new Image(),
+    new Image(),
+    new Image()
+];
+
+obstacleImages[0].src = 'https://images.unsplash.com/photo-1517278322228-3fe7a86cf6f0?w=80&h=80&fit=crop'; // Кактус 1
+obstacleImages[1].src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=80&h=80&fit=crop'; // Кактус 2
+obstacleImages[2].src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=80&h=60&fit=crop'; // Кактус 3
 // Основные элементы DOM игры
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
