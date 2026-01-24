@@ -23,31 +23,94 @@ let highScore = parseInt(localStorage.getItem('gameHighScore')) || 0;
 let lastTime = 0;
 let animationId;
 
-// ЗАГРУЗКА ФОТОГРАФИЙ
-// ⚠️ ЗАМЕНИТЕ ЭТИ ССЫЛКИ НА СВОИ ФОТО!
+// Настройки звука
+let soundEnabled = true;
+let musicEnabled = true;
+
+// Звуковые элементы
+const jumpSound = document.getElementById('jump-sound');
+const collisionSound = document.getElementById('collision-sound');
+const gameOverSound = document.getElementById('game-over-sound');
+const bgMusic = document.getElementById('bg-music');
+const clickSound = document.getElementById('click-sound');
+const bgVideo = document.getElementById('bg-video');
+
+// ========================================
+// ФОТОГРАФИИ (ИСПОЛЬЗУЕМ РАБОЧИЕ ССЫЛКИ)
+// ========================================
 const playerImg = new Image();
-playerImg.src = 'https://i.imgur.com/ваше_фото_персонажа.jpg'; // ФОТО ПЕРСОНАЖА
+playerImg.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png'; // Пикачу
 
 const obstacleImg1 = new Image();
-obstacleImg1.src = 'https://i.imgur.com/ваше_препятствие1.jpg'; // ПРЕПЯТСТВИЕ 1
+obstacleImg1.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/74.png'; // Геодуд
 
 const obstacleImg2 = new Image();
-obstacleImg2.src = 'https://i.imgur.com/ваше_препятствие2.jpg'; // ПРЕПЯТСТВИЕ 2
+obstacleImg2.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/95.png'; // Онакс
 
 const obstacleImg3 = new Image();
-obstacleImg3.src = 'https://i.imgur.com/ваше_препятствие3.jpg'; // ПРЕПЯТСТВИЕ 3
+obstacleImg3.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/76.png'; // Голем
 
-// Игрок
+// Проверка загрузки изображений
+let imagesLoaded = {
+    player: false,
+    obstacle1: false,
+    obstacle2: false,
+    obstacle3: false
+};
+
+playerImg.onload = () => {
+    imagesLoaded.player = true;
+    console.log('✅ Фото персонажа загружено');
+};
+
+playerImg.onerror = () => {
+    console.log('❌ Ошибка загрузки фото персонажа');
+    imagesLoaded.player = false;
+};
+
+obstacleImg1.onload = () => {
+    imagesLoaded.obstacle1 = true;
+    console.log('✅ Фото препятствия 1 загружено');
+};
+
+obstacleImg1.onerror = () => {
+    console.log('❌ Ошибка загрузки фото препятствия 1');
+    imagesLoaded.obstacle1 = false;
+};
+
+obstacleImg2.onload = () => {
+    imagesLoaded.obstacle2 = true;
+    console.log('✅ Фото препятствия 2 загружено');
+};
+
+obstacleImg2.onerror = () => {
+    console.log('❌ Ошибка загрузки фото препятствия 2');
+    imagesLoaded.obstacle2 = false;
+};
+
+obstacleImg3.onload = () => {
+    imagesLoaded.obstacle3 = true;
+    console.log('✅ Фото препятствия 3 загружено');
+};
+
+obstacleImg3.onerror = () => {
+    console.log('❌ Ошибка загрузки фото препятствия 3');
+    imagesLoaded.obstacle3 = false;
+};
+
+// ========================================
+// ИГРОК
+// ========================================
 const player = {
     x: 50,
     y: 0,
-    width: 70,  // Ширина персонажа
-    height: 90, // Высота персонажа
+    width: 60,
+    height: 80,
     jumping: false,
     ducking: false,
     velocity: 0,
-    gravity: 0.3,    // МЕНЬШЕ гравитация = плавнее
-    jumpPower: -10,  // МЕНЬШЕ высота прыжка
+    gravity: 0.3,    // Меньше гравитация
+    jumpPower: -10,  // Меньше прыжок
     groundY: 0
 };
 
@@ -56,9 +119,51 @@ let obstacles = [];
 let clouds = [];
 let groundOffset = 0;
 
-// Инициализация игры
+// ========================================
+// ФУНКЦИИ ДЛЯ ЗВУКА
+// ========================================
+function playSound(soundElement) {
+    if (!soundEnabled) return;
+    
+    try {
+        soundElement.currentTime = 0;
+        soundElement.play().catch(e => {
+            console.log('Звук не воспроизведен:', e);
+        });
+    } catch (error) {
+        console.log('Ошибка воспроизведения звука:', error);
+    }
+}
+
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    const soundBtn = document.getElementById('sound-btn');
+    if (soundBtn) {
+        soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+        playSound(clickSound);
+    }
+}
+
+function toggleMusic() {
+    musicEnabled = !musicEnabled;
+    const musicBtn = document.getElementById('music-btn');
+    if (musicBtn) {
+        musicBtn.textContent = musicEnabled ? '🎵' : '🔇';
+        playSound(clickSound);
+        
+        if (musicEnabled && gameRunning && !gamePaused) {
+            bgMusic.play().catch(e => console.log('Музыка не запущена:', e));
+        } else {
+            bgMusic.pause();
+        }
+    }
+}
+
+// ========================================
+// ИНИЦИАЛИЗАЦИЯ ИГРЫ
+// ========================================
 function initGame() {
-    console.log('Запуск игры...');
+    console.log('🔄 Инициализация игры...');
     
     // Устанавливаем размеры canvas
     const container = document.querySelector('.game-container');
@@ -86,14 +191,72 @@ function initGame() {
         });
     }
     
+    // Добавляем кнопки звука
+    addSoundButtons();
+    
     // Настраиваем обработчики событий
     setupGameEventListeners();
     
     // Рисуем меню
     drawMenuScreen();
+    
+    console.log('✅ Игра готова!');
 }
 
-// Рисуем меню
+// ========================================
+// ДОБАВЛЕНИЕ КНОПОК ЗВУКА
+// ========================================
+function addSoundButtons() {
+    // Проверяем, есть ли уже кнопки
+    if (!document.getElementById('sound-btn')) {
+        const gameUI = document.getElementById('game-ui');
+        if (gameUI) {
+            const soundControls = document.createElement('div');
+            soundControls.style.cssText = `
+                display: flex;
+                gap: 5px;
+                position: absolute;
+                top: 15px;
+                right: 70px;
+            `;
+            
+            const soundBtn = document.createElement('button');
+            soundBtn.id = 'sound-btn';
+            soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+            soundBtn.title = 'Вкл/Выкл звуки';
+            soundBtn.style.cssText = `
+                background: rgba(26, 32, 44, 0.9);
+                border: 2px solid #4a5568;
+                border-radius: 50%;
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+                color: #fff;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            const musicBtn = document.createElement('button');
+            musicBtn.id = 'music-btn';
+            musicBtn.textContent = musicEnabled ? '🎵' : '🔇';
+            musicBtn.title = 'Вкл/Выкл музыку';
+            musicBtn.style.cssText = soundBtn.style.cssText;
+            
+            soundControls.appendChild(soundBtn);
+            soundControls.appendChild(musicBtn);
+            gameUI.appendChild(soundControls);
+            
+            soundBtn.addEventListener('click', toggleSound);
+            musicBtn.addEventListener('click', toggleMusic);
+        }
+    }
+}
+
+// ========================================
+// РИСОВАНИЕ МЕНЮ
+// ========================================
 function drawMenuScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
@@ -124,18 +287,44 @@ function drawMenuScreen() {
     ctx.font = '14px Arial';
     ctx.fillText('👆 Правая часть экрана - Прыжок', canvas.width / 2, 240);
     ctx.fillText('👇 Левая часть экрана - Пригнуться', canvas.width / 2, 270);
+    
+    // Звук
+    ctx.fillText('🔊 Настрой звук в правом верхнем углу', canvas.width / 2, 320);
 }
 
-// Настройка обработчиков
+// ========================================
+// НАСТРОЙКА ОБРАБОТЧИКОВ
+// ========================================
 function setupGameEventListeners() {
-    startBtn.addEventListener('click', startGame);
-    pauseBtn.addEventListener('click', pauseGame);
-    document.getElementById('resume-btn').addEventListener('click', pauseGame);
-    document.getElementById('restart-btn').addEventListener('click', restartGame);
-    document.getElementById('menu-btn').addEventListener('click', returnToGameMenu);
+    startBtn.addEventListener('click', function() {
+        playSound(clickSound);
+        startGame();
+    });
+    
+    pauseBtn.addEventListener('click', function() {
+        playSound(clickSound);
+        pauseGame();
+    });
+    
+    document.getElementById('resume-btn').addEventListener('click', function() {
+        playSound(clickSound);
+        pauseGame();
+    });
+    
+    document.getElementById('restart-btn').addEventListener('click', function() {
+        playSound(clickSound);
+        restartGame();
+    });
+    
+    document.getElementById('menu-btn').addEventListener('click', function() {
+        playSound(clickSound);
+        returnToGameMenu();
+    });
 }
 
-// Запуск игры
+// ========================================
+// ЗАПУСК ИГРЫ
+// ========================================
 function startGame() {
     if (gameRunning) return;
     
@@ -149,14 +338,23 @@ function startGame() {
     player.jumping = false;
     player.ducking = false;
     player.y = player.groundY;
-    player.height = 90;
+    player.height = 80;
     player.velocity = 0;
+    
+    // Запускаем музыку
+    if (musicEnabled) {
+        bgMusic.currentTime = 0;
+        bgMusic.volume = 0.3;
+        bgMusic.play().catch(e => console.log('Не удалось запустить музыку:', e));
+    }
     
     lastTime = performance.now();
     animationId = requestAnimationFrame(gameLoop);
 }
 
-// Пауза
+// ========================================
+// ПАУЗА ИГРЫ
+// ========================================
 function pauseGame() {
     if (!gameRunning) return;
     
@@ -167,20 +365,29 @@ function pauseGame() {
     
     if (gamePaused) {
         cancelAnimationFrame(animationId);
+        bgMusic.pause();
     } else {
         lastTime = performance.now();
         animationId = requestAnimationFrame(gameLoop);
         pauseScreen.classList.remove('show');
+        
+        if (musicEnabled) {
+            bgMusic.play().catch(e => console.log('Не удалось возобновить музыку:', e));
+        }
     }
 }
 
-// Перезапуск
+// ========================================
+// ПЕРЕЗАПУСК ИГРЫ
+// ========================================
 function restartGame() {
     document.getElementById('pause-screen').classList.remove('show');
     startGame();
 }
 
-// Возврат в меню
+// ========================================
+// ВОЗВРАТ В МЕНЮ
+// ========================================
 function returnToGameMenu() {
     document.getElementById('pause-screen').classList.remove('show');
     menuScreen.classList.remove('hidden');
@@ -188,9 +395,14 @@ function returnToGameMenu() {
     gamePaused = false;
     cancelAnimationFrame(animationId);
     localStorage.setItem('gameHighScore', highScore);
+    
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
 }
 
-// Игровой цикл
+// ========================================
+// ИГРОВОЙ ЦИКЛ
+// ========================================
 function gameLoop(currentTime) {
     if (!gameRunning || gamePaused) return;
     
@@ -203,7 +415,9 @@ function gameLoop(currentTime) {
     animationId = requestAnimationFrame(gameLoop);
 }
 
-// Обновление игры
+// ========================================
+// ОБНОВЛЕНИЕ ИГРЫ
+// ========================================
 function updateGame(deltaTime) {
     // СЧЕТ: +1 за каждый кадр
     score += 1;
@@ -215,7 +429,7 @@ function updateGame(deltaTime) {
     // Обновляем игрока
     updatePlayer();
     
-    // Обновляем препятствия (медленнее)
+    // Обновляем препятствия
     updateObstacles(gameSpeed);
     
     // Обновляем облака
@@ -233,13 +447,15 @@ function updateGame(deltaTime) {
         highScoreElement.textContent = `Рекорд: ${highScore}`;
         menuHighScoreElement.textContent = highScore;
         
-        if (score > 0 && score % 100 === 0) {
+        if (score > 0 && score % 500 === 0) {
             showNewRecord();
         }
     }
 }
 
-// Обновление игрока
+// ========================================
+// ОБНОВЛЕНИЕ ИГРОКА
+// ========================================
 function updatePlayer() {
     if (player.jumping) {
         player.velocity += player.gravity;
@@ -253,22 +469,24 @@ function updatePlayer() {
     }
     
     if (player.ducking && !player.jumping) {
-        player.height = 60;
+        player.height = 50;
         player.y = player.groundY + 30;
     } else if (!player.jumping) {
-        player.height = 90;
+        player.height = 80;
         player.y = player.groundY;
     }
 }
 
-// Обновление препятствий
+// ========================================
+// ОБНОВЛЕНИЕ ПРЕПЯТСТВИЙ
+// ========================================
 function updateObstacles(gameSpeed) {
-    // РЕЖЕ появляются препятствия
+    // МЕДЛЕННОЕ появление препятствий
     if (Math.random() < 0.0015) {
         const types = [
-            { width: 50, height: 80, img: obstacleImg1 },
-            { width: 70, height: 60, img: obstacleImg2 },
-            { width: 90, height: 40, img: obstacleImg3 }
+            { width: 50, height: 60, img: obstacleImg1, imgIndex: 1 },
+            { width: 60, height: 50, img: obstacleImg2, imgIndex: 2 },
+            { width: 70, height: 40, img: obstacleImg3, imgIndex: 3 }
         ];
         
         const type = Math.floor(Math.random() * types.length);
@@ -278,6 +496,7 @@ function updateObstacles(gameSpeed) {
             width: types[type].width,
             height: types[type].height,
             img: types[type].img,
+            imgIndex: types[type].imgIndex,
             speed: 1.5 + Math.random() * 1.5  // МЕДЛЕННАЯ СКОРОСТЬ
         });
     }
@@ -292,7 +511,9 @@ function updateObstacles(gameSpeed) {
     }
 }
 
-// Обновление облаков
+// ========================================
+// ОБНОВЛЕНИЕ ОБЛАКОВ
+// ========================================
 function updateClouds() {
     for (let cloud of clouds) {
         cloud.x -= cloud.speed;
@@ -304,14 +525,26 @@ function updateClouds() {
     }
 }
 
-// Проверка столкновений
+// ========================================
+// ПРОВЕРКА СТОЛКНОВЕНИЙ
+// ========================================
 function checkCollisions() {
     for (let obstacle of obstacles) {
-        // Простая проверка столкновения
-        if (player.x + player.width * 0.7 > obstacle.x &&
-            player.x < obstacle.x + obstacle.width * 0.7 &&
-            player.y + player.height * 0.7 > obstacle.y &&
-            player.y < obstacle.y + obstacle.height * 0.7) {
+        // Упрощенная проверка столкновения
+        const playerRight = player.x + player.width * 0.7;
+        const playerLeft = player.x + player.width * 0.3;
+        const playerBottom = player.y + player.height * 0.7;
+        const playerTop = player.y + player.height * 0.3;
+        
+        const obstacleRight = obstacle.x + obstacle.width * 0.7;
+        const obstacleLeft = obstacle.x + obstacle.width * 0.3;
+        const obstacleBottom = obstacle.y + obstacle.height * 0.7;
+        const obstacleTop = obstacle.y + obstacle.height * 0.3;
+        
+        if (playerRight > obstacleLeft &&
+            playerLeft < obstacleRight &&
+            playerBottom > obstacleTop &&
+            playerTop < obstacleBottom) {
             
             gameOver();
             return;
@@ -319,19 +552,32 @@ function checkCollisions() {
     }
 }
 
-// Конец игры
+// ========================================
+// КОНЕЦ ИГРЫ
+// ========================================
 function gameOver() {
     gameRunning = false;
     cancelAnimationFrame(animationId);
     
+    // Проигрываем звуки
+    playSound(collisionSound);
+    setTimeout(() => playSound(gameOverSound), 300);
+    
     localStorage.setItem('gameHighScore', highScore);
     
+    // Останавливаем музыку
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+    
+    // Показываем меню
     setTimeout(() => {
         menuScreen.classList.remove('hidden');
     }, 800);
 }
 
-// Отрисовка игры
+// ========================================
+// ОТРИСОВКА ИГРЫ
+// ========================================
 function drawGame() {
     // Очищаем экран
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -347,51 +593,41 @@ function drawGame() {
     drawSun();
     
     // Облака
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    for (let cloud of clouds) {
-        drawCloud(cloud.x, cloud.y, cloud.width);
-    }
+    drawClouds();
     
     // Дорога
-    ctx.fillStyle = '#696969';
-    ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+    drawRoad();
     
     // Разметка
-    ctx.fillStyle = '#FFFFFF';
-    for (let i = 0; i < canvas.width; i += 100) {
-        ctx.fillRect(i + groundOffset, canvas.height - 30, 50, 5);
-    }
+    drawRoadLines();
     
     // Препятствия
-    for (let obstacle of obstacles) {
-        if (obstacle.img.complete) {
-            ctx.drawImage(obstacle.img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-        } else {
-            ctx.fillStyle = '#8B0000';
-            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-        }
-    }
+    drawObstacles();
     
     // Игрок
     drawPlayer();
 }
 
-// Рисование игрока
-function drawPlayer() {
-    if (playerImg.complete) {
-        if (player.ducking && !player.jumping) {
-            ctx.drawImage(playerImg, player.x, player.y + 30, player.width, 60);
-        } else {
-            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
-        }
-    } else {
-        // Запасной вариант
-        ctx.fillStyle = '#4169E1';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
+// ========================================
+// РИСОВАНИЕ СОЛНЦА
+// ========================================
+function drawSun() {
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(canvas.width - 60, 60, 30, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// ========================================
+// РИСОВАНИЕ ОБЛАКОВ
+// ========================================
+function drawClouds() {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    for (let cloud of clouds) {
+        drawCloud(cloud.x, cloud.y, cloud.width);
     }
 }
 
-// Рисование облака
 function drawCloud(x, y, width) {
     const height = width * 0.5;
     ctx.beginPath();
@@ -401,15 +637,106 @@ function drawCloud(x, y, width) {
     ctx.fill();
 }
 
-// Рисование солнца
-function drawSun() {
-    ctx.fillStyle = '#FFD700';
-    ctx.beginPath();
-    ctx.arc(canvas.width - 60, 60, 30, 0, Math.PI * 2);
-    ctx.fill();
+// ========================================
+// РИСОВАНИЕ ДОРОГИ
+// ========================================
+function drawRoad() {
+    ctx.fillStyle = '#696969';
+    ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
 }
 
-// Новый рекорд
+// ========================================
+// РИСОВАНИЕ РАЗМЕТКИ
+// ========================================
+function drawRoadLines() {
+    ctx.fillStyle = '#FFFFFF';
+    for (let i = 0; i < canvas.width; i += 100) {
+        ctx.fillRect(i + groundOffset, canvas.height - 30, 50, 5);
+    }
+}
+
+// ========================================
+// РИСОВАНИЕ ПРЕПЯТСТВИЙ
+// ========================================
+function drawObstacles() {
+    for (let obstacle of obstacles) {
+        // Проверяем, загрузилось ли изображение
+        let canDrawImage = false;
+        if (obstacle.imgIndex === 1 && imagesLoaded.obstacle1 && obstacle.img.complete) {
+            canDrawImage = true;
+        } else if (obstacle.imgIndex === 2 && imagesLoaded.obstacle2 && obstacle.img.complete) {
+            canDrawImage = true;
+        } else if (obstacle.imgIndex === 3 && imagesLoaded.obstacle3 && obstacle.img.complete) {
+            canDrawImage = true;
+        }
+        
+        if (canDrawImage) {
+            try {
+                ctx.drawImage(obstacle.img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            } catch (error) {
+                drawObstacleFallback(obstacle);
+            }
+        } else {
+            drawObstacleFallback(obstacle);
+        }
+    }
+}
+
+function drawObstacleFallback(obstacle) {
+    // Запасной вариант
+    ctx.fillStyle = '#8B0000';
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(obstacle.x + 5, obstacle.y + 5, obstacle.width - 10, 3);
+    ctx.fillRect(obstacle.x + 5, obstacle.y + obstacle.height - 8, obstacle.width - 10, 3);
+}
+
+// ========================================
+// РИСОВАНИЕ ИГРОКА
+// ========================================
+function drawPlayer() {
+    // Проверяем, загрузилось ли изображение
+    if (imagesLoaded.player && playerImg.complete) {
+        try {
+            if (player.ducking && !player.jumping) {
+                ctx.drawImage(playerImg, player.x, player.y + 30, player.width, 50);
+            } else {
+                ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+            }
+            return;
+        } catch (error) {
+            console.log('Ошибка рисования игрока:', error);
+        }
+    }
+    
+    // Запасной вариант
+    drawPlayerFallback();
+}
+
+function drawPlayerFallback() {
+    ctx.fillStyle = '#4169E1';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(player.x + player.width - 20, player.y + 15, 10, 10);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(player.x + player.width - 18, player.y + 17, 6, 6);
+    
+    ctx.beginPath();
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    ctx.arc(player.x + player.width - 30, player.y + 30, 10, 0, Math.PI);
+    ctx.stroke();
+    
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(player.x + 5, player.y + 10, player.width - 10, 5);
+    ctx.fillRect(player.x + 5, player.y + 25, player.width - 10, 5);
+}
+
+// ========================================
+// НОВЫЙ РЕКОРД
+// ========================================
 function showNewRecord() {
     const recordEl = document.getElementById('new-record');
     recordEl.classList.add('show');
@@ -419,12 +746,15 @@ function showNewRecord() {
     }, 1500);
 }
 
-// Управление
+// ========================================
+// УПРАВЛЕНИЕ ИГРОЙ
+// ========================================
 function jump() {
     if (!player.jumping && gameRunning && !gamePaused) {
         player.jumping = true;
         player.velocity = player.jumpPower;
         player.ducking = false;
+        playSound(jumpSound); // Звук прыжка
     }
 }
 
@@ -434,7 +764,9 @@ function duck(start) {
     }
 }
 
-// Обработка касаний
+// ========================================
+// ОБРАБОТКА КАСАНИЙ
+// ========================================
 function handleTouchStart(e) {
     e.preventDefault();
     const touch = e.touches[0];
@@ -453,7 +785,9 @@ function handleTouchEnd(e) {
     duck(false);
 }
 
-// Обработка мыши
+// ========================================
+// ОБРАБОТКА МЫШИ
+// ========================================
 function handleMouseDown(e) {
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -469,7 +803,9 @@ function handleMouseUp(e) {
     duck(false);
 }
 
-// Обработка клавиатуры
+// ========================================
+// ОБРАБОТКА КЛАВИАТУРЫ
+// ========================================
 function handleKeyDown(e) {
     if (e.code === 'Space' || e.code === 'ArrowUp') {
         jump();
@@ -484,21 +820,28 @@ function handleKeyUp(e) {
     }
 }
 
-// Настройка модального окна
+// ========================================
+// НАСТРОЙКА МОДАЛЬНОГО ОКНА
+// ========================================
 function setupModalControls() {
     launchGameBtn.addEventListener('click', function() {
+        playSound(clickSound);
         gameModal.classList.add('show');
         document.body.style.overflow = 'hidden';
         initGame();
     });
     
     closeGameBtn.addEventListener('click', function() {
+        playSound(clickSound);
         gameModal.classList.remove('show');
         document.body.style.overflow = 'auto';
         
         gameRunning = false;
         gamePaused = false;
         cancelAnimationFrame(animationId);
+        
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
     });
     
     gameModal.addEventListener('click', function(e) {
@@ -509,6 +852,9 @@ function setupModalControls() {
             gameRunning = false;
             gamePaused = false;
             cancelAnimationFrame(animationId);
+            
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
         }
     });
     
@@ -521,7 +867,9 @@ function setupModalControls() {
     document.addEventListener('keyup', handleKeyUp);
 }
 
-// Загрузка страницы
+// ========================================
+// ЗАГРУЗКА СТРАНИЦЫ
+// ========================================
 window.addEventListener('load', function() {
     setupModalControls();
     
@@ -530,6 +878,7 @@ window.addEventListener('load', function() {
         yearElement.textContent = new Date().getFullYear();
     }
     
-    console.log('✅ Игра готова!');
-    console.log('⚠️ Замените ссылки на фото в начале файла');
+    console.log('✅ Игра с звуком готова!');
+    console.log('🔊 Звук включен по умолчанию');
+    console.log('🎵 Музыка включена по умолчанию');
 });
