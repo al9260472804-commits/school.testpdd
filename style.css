@@ -856,7 +856,40 @@ canvas {
 ::-webkit-scrollbar {
     width: 10px;
 }
+/* Кнопки звука в игре */
+#sound-btn, #music-btn {
+    pointer-events: auto;
+    background: rgba(26, 32, 44, 0.9);
+    border: 2px solid #4a5568;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+}
 
+#sound-btn:hover, #music-btn:hover {
+    background: rgba(45, 55, 72, 0.9);
+    transform: scale(1.05);
+}
+
+#sound-btn:active, #music-btn:active {
+    transform: scale(0.95);
+}
+
+/* Эффекты звука в меню */
+.sound-instruction {
+    color: #f6e05e;
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: center;
+}
 ::-webkit-scrollbar-track {
     background: #1a1a1a;
 }
