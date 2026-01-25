@@ -1452,3 +1452,56 @@ canvas {
     0%, 100% { opacity: 0; }
     20%, 80% { opacity: 1; }
 }
+/* Стили для фото в викторине */
+.quiz-photo {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.quiz-photo:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.photo-caption {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    text-align: center;
+}
+
+/* Адаптивность для фото */
+@media (max-width: 768px) {
+    .quiz-photo {
+        max-width: 100%;
+        margin: 15px 0;
+    }
+    
+    .QuestionMarkup-Column_column_left img {
+        margin-top: 10px !important;
+        max-width: 100% !important;
+    }
+}
+
+/* Анимация для фото */
+@keyframes fadeInPhoto {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.quiz-photo, .QuestionMarkup-Column_column_left img {
+    animation: fadeInPhoto 0.5s ease;
+}
+
+/* Стили для аватара без LA */
+.g-avatar__image-placeholder {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    font-size: 16px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+}
