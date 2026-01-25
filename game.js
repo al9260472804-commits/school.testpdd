@@ -4,12 +4,22 @@ const ctx = canvas.getContext('2d');
 
 // Элементы интерфейса игры
 const menuScreen = document.getElementById('menu-screen');
+const pauseScreen = document.getElementById('pause-screen');
 const startBtn = document.getElementById('start-btn');
 const pauseBtn = document.getElementById('pause-btn');
+const resumeBtn = document.getElementById('resume-btn');
+const restartBtn = document.getElementById('restart-btn');
+const menuBtn = document.getElementById('menu-btn');
 const scoreElement = document.getElementById('score');
 const highScoreElement = document.getElementById('high-score');
 const menuHighScoreElement = document.getElementById('menu-high-score');
-const pauseScreen = document.getElementById('pause-screen');
+const pauseScoreElement = document.getElementById('pause-score');
+const newRecordElement = document.getElementById('new-record');
+
+// Модальное окно игры
+const gameModal = document.getElementById('game-modal');
+const closeGameBtn = document.getElementById('close-game-btn');
+const launchGameBtn = document.getElementById('launch-game-btn');
 
 // Состояние игры
 let gameRunning = false;
@@ -18,6 +28,26 @@ let score = 0;
 let highScore = parseInt(localStorage.getItem('gameHighScore')) || 0;
 let lastTime = 0;
 let animationId;
+
+// Создаем видео элемент для игрока
+const playerVideo = document.createElement('video');
+playerVideo.src = 'lv_0_20260125005509.mp4'; // Твое видео
+playerVideo.loop = true;
+playerVideo.muted = true;
+playerVideo.playsInline = true;
+playerVideo.preload = 'auto';
+
+// Проверяем загрузку видео
+let videoLoaded = false;
+playerVideo.addEventListener('loadeddata', () => {
+    console.log('✅ Видео загружено');
+    videoLoaded = true;
+});
+
+playerVideo.addEventListener('error', (e) => {
+    console.log('❌ Ошибка загрузки видео:', e);
+    videoLoaded = false;
+});
 
 // Игрок
 const player = {
@@ -28,8 +58,8 @@ const player = {
     jumping: false,
     ducking: false,
     velocity: 0,
-    gravity: 0.5,
-    jumpPower: -12,
+    gravity: 0.2,      // МЕДЛЕННАЯ гравитация
+    jumpPower: -8,     // МЕДЛЕННЫЙ прыжок
     groundY: 0
 };
 
@@ -46,6 +76,8 @@ function initGame() {
     
     // Устанавливаем размеры canvas
     const container = document.querySelector('.game-container');
+    if (!container) return;
+    
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
     
@@ -57,19 +89,23 @@ function initGame() {
     highScoreElement.textContent = `Рекорд: ${highScore}`;
     menuHighScoreElement.textContent = highScore;
     
-    // Создаем облака
+    // Создаем облака (МЕДЛЕННЫЕ)
     clouds = [];
     for (let i = 0; i < 3; i++) {
         clouds.push({
             x: Math.random() * canvas.width,
             y: Math.random() * 150,
             width: 50 + Math.random() * 50,
-            speed: 0.1 + Math.random() * 0.3
+            speed: 0.05 + Math.random() * 0.1  // ОЧЕНЬ МЕДЛЕННО
         });
     }
     
     // Очищаем препятствия
     obstacles = [];
+    
+    // Сбрасываем счет
+    score = 0;
+    scoreElement.textContent = 0;
     
     // Показываем меню
     menuScreen.classList.remove('hidden');
@@ -115,58 +151,30 @@ function drawMenuScreen() {
     ctx.font = '14px Arial';
     ctx.fillText('👆 Правая часть экрана - Прыжок', canvas.width / 2, 240);
     ctx.fillText('👇 Левая часть экрана - Пригнуться', canvas.width / 2, 270);
+    ctx.fillText('Пробел или Стрелка ↑ - Прыжок', canvas.width / 2, 300);
+    ctx.fillText('Стрелка ↓ - Пригнуться', canvas.width / 2, 330);
 }
 
 // ========================================
 // НАСТРОЙКА ОБРАБОТЧИКОВ
 // ========================================
 function setupGameEventListeners() {
-    // Удаляем старые обработчики
-    startBtn.removeEventListener('click', startGameHandler);
-    pauseBtn.removeEventListener('click', pauseGameHandler);
+    // Управление кнопками
+    startBtn.addEventListener('click', startGame);
+    pauseBtn.addEventListener('click', pauseGame);
+    resumeBtn.addEventListener('click', resumeGame);
+    restartBtn.addEventListener('click', restartGame);
+    menuBtn.addEventListener('click', returnToMenu);
     
-    // Добавляем новые обработчики
-    startBtn.addEventListener('click', startGameHandler);
-    pauseBtn.addEventListener('click', pauseGameHandler);
-    
-    // Обработчики для паузы
-    document.getElementById('resume-btn').addEventListener('click', resumeGameHandler);
-    document.getElementById('restart-btn').addEventListener('click', restartGameHandler);
-    document.getElementById('menu-btn').addEventListener('click', menuGameHandler);
-    
-    // Управление
+    // Управление игрой
     canvas.addEventListener('click', handleCanvasClick);
     canvas.addEventListener('touchstart', handleTouchStart);
     document.addEventListener('keydown', handleKeyDown);
-}
-
-function startGameHandler() {
-    console.log('Начало игры');
-    startGame();
-}
-
-function pauseGameHandler() {
-    console.log('Пауза игры');
-    pauseGame();
-}
-
-function resumeGameHandler() {
-    console.log('Продолжить игру');
-    pauseGame();
-}
-
-function restartGameHandler() {
-    console.log('Перезапуск игры');
-    restartGame();
-}
-
-function menuGameHandler() {
-    console.log('Возврат в меню');
-    returnToMenu();
+    document.addEventListener('keyup', handleKeyUp);
 }
 
 // ========================================
-// ОБРАБОТКА УПРАВЛЕНИЯ
+// УПРАВЛЕНИЕ ИГРОЙ
 // ========================================
 function handleCanvasClick(e) {
     if (!gameRunning || gamePaused) return;
@@ -178,7 +186,7 @@ function handleCanvasClick(e) {
         jump();
     } else {
         duck(true);
-        setTimeout(() => duck(false), 500);
+        setTimeout(() => duck(false), 300);
     }
 }
 
@@ -186,14 +194,15 @@ function handleTouchStart(e) {
     if (!gameRunning || gamePaused) return;
     
     e.preventDefault();
+    const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
-    const touchX = e.touches[0].clientX - rect.left;
+    const touchX = touch.clientX - rect.left;
     
     if (touchX > canvas.width / 2) {
         jump();
     } else {
         duck(true);
-        setTimeout(() => duck(false), 500);
+        setTimeout(() => duck(false), 300);
     }
 }
 
@@ -202,9 +211,16 @@ function handleKeyDown(e) {
     
     if (e.code === 'Space' || e.code === 'ArrowUp') {
         jump();
+        e.preventDefault();
     } else if (e.code === 'ArrowDown') {
         duck(true);
-        setTimeout(() => duck(false), 500);
+        e.preventDefault();
+    }
+}
+
+function handleKeyUp(e) {
+    if (e.code === 'ArrowDown') {
+        duck(false);
     }
 }
 
@@ -213,12 +229,14 @@ function jump() {
         player.jumping = true;
         player.velocity = player.jumpPower;
         player.ducking = false;
+        console.log('Прыжок!');
     }
 }
 
 function duck(start) {
     if (gameRunning && !gamePaused) {
         player.ducking = start;
+        console.log(start ? 'Пригнулся' : 'Встал');
     }
 }
 
@@ -227,6 +245,8 @@ function duck(start) {
 // ========================================
 function startGame() {
     if (gameRunning) return;
+    
+    console.log('Начало игры');
     
     menuScreen.classList.add('hidden');
     gameRunning = true;
@@ -240,6 +260,14 @@ function startGame() {
     player.ducking = false;
     player.y = player.groundY;
     player.velocity = 0;
+    
+    // Запуск видео
+    if (videoLoaded) {
+        playerVideo.currentTime = 0;
+        playerVideo.play().catch(e => {
+            console.log('Не удалось запустить видео:', e);
+        });
+    }
     
     lastTime = performance.now();
     animationId = requestAnimationFrame(gameLoop);
@@ -256,18 +284,34 @@ function pauseGame() {
     if (gamePaused) {
         cancelAnimationFrame(animationId);
         pauseScreen.classList.add('show');
-        document.getElementById('pause-score').textContent = score;
+        pauseScoreElement.textContent = score;
+        
+        // Пауза видео
+        playerVideo.pause();
     } else {
         pauseScreen.classList.remove('show');
         lastTime = performance.now();
         animationId = requestAnimationFrame(gameLoop);
+        
+        // Возобновление видео
+        if (videoLoaded) {
+            playerVideo.play().catch(e => {
+                console.log('Не удалось возобновить видео:', e);
+            });
+        }
     }
+}
+
+function resumeGame() {
+    pauseGame();
 }
 
 // ========================================
 // ПЕРЕЗАПУСК ИГРЫ
 // ========================================
 function restartGame() {
+    console.log('Перезапуск игры');
+    
     pauseScreen.classList.remove('show');
     startGame();
 }
@@ -276,6 +320,8 @@ function restartGame() {
 // ВОЗВРАТ В МЕНЮ
 // ========================================
 function returnToMenu() {
+    console.log('Возврат в меню');
+    
     pauseScreen.classList.remove('show');
     gameRunning = false;
     gamePaused = false;
@@ -286,6 +332,9 @@ function returnToMenu() {
         highScore = score;
         localStorage.setItem('gameHighScore', highScore);
     }
+    
+    // Пауза видео
+    playerVideo.pause();
     
     // Сбрасываем игру
     initGame();
@@ -310,9 +359,9 @@ function gameLoop(currentTime) {
 // ОБНОВЛЕНИЕ ИГРЫ
 // ========================================
 function updateGame(deltaTime) {
-    // Обновляем счет
-    score += 1;
-    scoreElement.textContent = score;
+    // Очень медленное увеличение счета
+    score += 0.1;
+    scoreElement.textContent = Math.floor(score);
     
     // Обновляем игрока
     updatePlayer();
@@ -323,17 +372,22 @@ function updateGame(deltaTime) {
     // Обновляем облака
     updateClouds();
     
-    // Движение земли
-    groundOffset = (groundOffset - 2) % 50;
+    // МЕДЛЕННОЕ движение земли
+    groundOffset = (groundOffset - 0.5) % 50;
     
     // Проверка столкновений
     checkCollisions();
     
     // Обновляем рекорд
     if (score > highScore) {
-        highScore = score;
+        highScore = Math.floor(score);
         highScoreElement.textContent = `Рекорд: ${highScore}`;
         menuHighScoreElement.textContent = highScore;
+        
+        // Показываем сообщение о новом рекорде
+        if (Math.floor(score) % 100 === 0 && score > 0) {
+            showNewRecord();
+        }
     }
 }
 
@@ -359,15 +413,15 @@ function updatePlayer() {
 }
 
 function updateObstacles() {
-    // Создаем препятствия
-    if (Math.random() < 0.005) {
+    // ОЧЕНЬ МЕДЛЕННОЕ создание препятствий
+    if (Math.random() < 0.002) {  // Очень низкая вероятность
         const height = 40 + Math.random() * 40;
         obstacles.push({
             x: canvas.width,
             y: canvas.height - height - 50,
             width: 30,
             height: height,
-            speed: 3 + Math.random() * 2
+            speed: 1 + Math.random() * 1  // ОЧЕНЬ МЕДЛЕННО
         });
     }
     
@@ -408,14 +462,19 @@ function checkCollisions() {
 // КОНЕЦ ИГРЫ
 // ========================================
 function gameOver() {
+    console.log('Конец игры');
+    
     gameRunning = false;
     cancelAnimationFrame(animationId);
     
     // Сохраняем рекорд
     if (score > highScore) {
-        highScore = score;
+        highScore = Math.floor(score);
         localStorage.setItem('gameHighScore', highScore);
     }
+    
+    // Пауза видео
+    playerVideo.pause();
     
     // Показываем меню через секунду
     setTimeout(() => {
@@ -438,45 +497,52 @@ function drawGame() {
     ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
     
     // Солнце
+    drawSun();
+    
+    // Облака
+    drawClouds();
+    
+    // Земля
+    drawGround();
+    
+    // Дорожная разметка
+    drawRoadLines();
+    
+    // Препятствия
+    drawObstacles();
+    
+    // Игрок (видео)
+    drawPlayer();
+}
+
+function drawSun() {
     ctx.fillStyle = '#FFD700';
     ctx.beginPath();
     ctx.arc(canvas.width - 60, 60, 30, 0, Math.PI * 2);
     ctx.fill();
     
-    // Облака
+    // Лучи солнца
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 12; i++) {
+        const angle = (i * Math.PI) / 6;
+        const x1 = canvas.width - 60 + Math.cos(angle) * 35;
+        const y1 = 60 + Math.sin(angle) * 35;
+        const x2 = canvas.width - 60 + Math.cos(angle) * 45;
+        const y2 = 60 + Math.sin(angle) * 45;
+        
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
+}
+
+function drawClouds() {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
     for (let cloud of clouds) {
         drawCloud(cloud.x, cloud.y, cloud.width);
     }
-    
-    // Земля
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
-    
-    // Трава
-    ctx.fillStyle = '#228B22';
-    ctx.fillRect(0, canvas.height * 0.7, canvas.width, 10);
-    
-    // Дорожная разметка
-    ctx.fillStyle = '#FFFFFF';
-    for (let i = 0; i < canvas.width; i += 100) {
-        ctx.fillRect(i + groundOffset, canvas.height - 30, 50, 5);
-    }
-    
-    // Препятствия
-    ctx.fillStyle = '#8B0000';
-    for (let obstacle of obstacles) {
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-        
-        // Полоски на препятствии
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(obstacle.x + 5, obstacle.y + 5, obstacle.width - 10, 3);
-        ctx.fillRect(obstacle.x + 5, obstacle.y + obstacle.height - 8, obstacle.width - 10, 3);
-        ctx.fillStyle = '#8B0000';
-    }
-    
-    // Игрок
-    drawPlayer();
 }
 
 function drawCloud(x, y, width) {
@@ -488,8 +554,98 @@ function drawCloud(x, y, width) {
     ctx.fill();
 }
 
+function drawGround() {
+    // Земля
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+    
+    // Трава
+    ctx.fillStyle = '#228B22';
+    ctx.fillRect(0, canvas.height * 0.7, canvas.width, 10);
+    
+    // Камни
+    ctx.fillStyle = '#696969';
+    for (let i = 0; i < 5; i++) {
+        const stoneX = (i * 100 + groundOffset / 2) % canvas.width;
+        const stoneY = canvas.height * 0.7 + 5;
+        const stoneSize = 10 + Math.random() * 10;
+        
+        ctx.beginPath();
+        ctx.arc(stoneX, stoneY, stoneSize, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function drawRoadLines() {
+    ctx.fillStyle = '#FFFFFF';
+    for (let i = 0; i < canvas.width; i += 100) {
+        ctx.fillRect(i + groundOffset, canvas.height - 30, 50, 5);
+    }
+}
+
+function drawObstacles() {
+    ctx.fillStyle = '#8B0000';
+    for (let obstacle of obstacles) {
+        // Основное тело препятствия
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        
+        // Детали препятствия
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(obstacle.x + 5, obstacle.y + 5, obstacle.width - 10, 3);
+        ctx.fillRect(obstacle.x + 5, obstacle.y + obstacle.height - 8, obstacle.width - 10, 3);
+        ctx.fillStyle = '#8B0000';
+        
+        // Глаза препятствия
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(obstacle.x + 10, obstacle.y + 15, 5, 0, Math.PI * 2);
+        ctx.arc(obstacle.x + obstacle.width - 10, obstacle.y + 15, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(obstacle.x + 10, obstacle.y + 15, 2, 0, Math.PI * 2);
+        ctx.arc(obstacle.x + obstacle.width - 10, obstacle.y + 15, 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Улыбка
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(obstacle.x + obstacle.width / 2, obstacle.y + 25, 8, 0, Math.PI);
+        ctx.stroke();
+    }
+}
+
 function drawPlayer() {
-    // Тело игрока
+    // Пытаемся нарисовать видео
+    if (videoLoaded && playerVideo.readyState >= 2) {
+        try {
+            // Сохраняем состояние контекста
+            ctx.save();
+            
+            // Если пригнулся, рисуем видео меньше
+            if (player.ducking) {
+                ctx.drawImage(playerVideo, player.x, player.y + 30, player.width, 50);
+            } else {
+                ctx.drawImage(playerVideo, player.x, player.y, player.width, player.height);
+            }
+            
+            // Восстанавливаем состояние контекста
+            ctx.restore();
+            return;
+        } catch (error) {
+            console.log('Ошибка рисования видео:', error);
+            videoLoaded = false;
+        }
+    }
+    
+    // Запасной вариант - рисуем прямоугольник
+    drawPlayerFallback();
+}
+
+function drawPlayerFallback() {
+    // Тело игрока (запасной вариант)
     ctx.fillStyle = '#4169E1';
     ctx.fillRect(player.x, player.y, player.width, player.height);
     
@@ -517,18 +673,31 @@ function drawPlayer() {
     for (let i = 0; i < 3; i++) {
         ctx.fillRect(player.x + 5, player.y + 15 + i * 15, player.width - 10, 3);
     }
+    
+    // Надпись "Видео"
+    ctx.fillStyle = '#FF0000';
+    ctx.font = '10px Arial';
+    ctx.fillText('ВИДЕО', player.x + 10, player.y + 40);
+}
+
+// ========================================
+// НОВЫЙ РЕКОРД
+// ========================================
+function showNewRecord() {
+    newRecordElement.classList.add('show');
+    
+    setTimeout(() => {
+        newRecordElement.classList.remove('show');
+    }, 2000);
 }
 
 // ========================================
 // УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ
 // ========================================
 function setupModalControls() {
-    const gameModal = document.getElementById('game-modal');
-    const closeGameBtn = document.getElementById('close-game-btn');
-    const launchGameBtn = document.getElementById('launch-game-btn');
-    
     if (launchGameBtn) {
         launchGameBtn.addEventListener('click', function() {
+            console.log('Запуск игры');
             gameModal.classList.add('show');
             document.body.style.overflow = 'hidden';
             initGame();
@@ -537,6 +706,7 @@ function setupModalControls() {
     
     if (closeGameBtn) {
         closeGameBtn.addEventListener('click', function() {
+            console.log('Закрытие игры');
             gameModal.classList.remove('show');
             document.body.style.overflow = 'auto';
             
@@ -544,6 +714,9 @@ function setupModalControls() {
             gameRunning = false;
             gamePaused = false;
             cancelAnimationFrame(animationId);
+            
+            // Пауза видео
+            playerVideo.pause();
         });
     }
     
@@ -557,6 +730,9 @@ function setupModalControls() {
                 gameRunning = false;
                 gamePaused = false;
                 cancelAnimationFrame(animationId);
+                
+                // Пауза видео
+                playerVideo.pause();
             }
         });
     }
@@ -571,15 +747,13 @@ window.addEventListener('load', function() {
     // Настраиваем управление модальным окном
     setupModalControls();
     
-    // Обновляем год в футере
-    const yearElement = document.getElementById('current-year');
-    if (yearElement) {
-        yearElement.textContent = new Date().getFullYear();
-    }
+    // Предзагрузка видео
+    playerVideo.load();
     
-    // Инициализируем игру при первом открытии
-    const gameModal = document.getElementById('game-modal');
-    if (gameModal && gameModal.classList.contains('show')) {
-        initGame();
-    }
+    console.log('✅ Игра готова!');
+    console.log('🐢 Игра настроена на МЕДЛЕННУЮ скорость');
+    console.log('🎬 Используется видео вместо изображения');
 });
+
+// Отладка
+console.log('Версия игры: 2.0 (Медленная версия)');
