@@ -5,21 +5,6 @@
     <title>Викторина по правилам дорожного движения — Яндекс Формы</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Временные стили для аватара */
-        .g-avatar__image-placeholder {
-            width: 42px;
-            height: 42px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-        }
-    </style>
 </head>
 <body class="g-root g-root_theme_dark">
     <noscript>
@@ -112,7 +97,7 @@
                                             <label class="g-control-label g-radio">
                                                 <span class="g-control-label__indicator g-radio__indicator">
                                                     <span class="g-radio__disc"></span>
-                                                    <input name="question1" type="radio" value="yes">
+                                                    <input name="question1" type="radio" value="yes" class="radio-input">
                                                     <span class="g-radio__outline"></span>
                                                 </span>
                                                 <span class="g-control-label__text">Да</span>
@@ -120,7 +105,7 @@
                                             <label class="g-control-label g-radio">
                                                 <span class="g-control-label__indicator g-radio__indicator">
                                                     <span class="g-radio__disc"></span>
-                                                    <input name="question1" type="radio" value="no">
+                                                    <input name="question1" type="radio" value="no" class="radio-input">
                                                     <span class="g-radio__outline"></span>
                                                 </span>
                                                 <span class="g-control-label__text">Нет</span>
@@ -148,7 +133,7 @@
                                             <label class="g-control-label g-radio">
                                                 <span class="g-control-label__indicator g-radio__indicator">
                                                     <span class="g-radio__disc"></span>
-                                                    <input name="question2" type="radio" value="enter-prohibited">
+                                                    <input name="question2" type="radio" value="enter-prohibited" class="radio-input">
                                                     <span class="g-radio__outline"></span>
                                                 </span>
                                                 <span class="g-control-label__text">Въезд запрещен</span>
@@ -156,7 +141,7 @@
                                             <label class="g-control-label g-radio">
                                                 <span class="g-control-label__indicator g-radio__indicator">
                                                     <span class="g-radio__disc"></span>
-                                                    <input name="question2" type="radio" value="dead-end">
+                                                    <input name="question2" type="radio" value="dead-end" class="radio-input">
                                                     <span class="g-radio__outline"></span>
                                                 </span>
                                                 <span class="g-control-label__text">Впереди тупик</span>
@@ -164,7 +149,7 @@
                                             <label class="g-control-label g-radio">
                                                 <span class="g-control-label__indicator g-radio__indicator">
                                                     <span class="g-radio__disc"></span>
-                                                    <input name="question2" type="radio" value="parking-prohibited">
+                                                    <input name="question2" type="radio" value="parking-prohibited" class="radio-input">
                                                     <span class="g-radio__outline"></span>
                                                 </span>
                                                 <span class="g-control-label__text">Стоянка запрещена</span>
@@ -249,6 +234,8 @@
             <div class="game-instructions">
                 <p>👆 Правая часть экрана - Прыжок</p>
                 <p>👇 Левая часть экрана - Пригнуться</p>
+                <p>Пробел или Стрелка ↑ - Прыжок</p>
+                <p>Стрелка ↓ - Пригнуться</p>
             </div>
         </div>
     </div>
@@ -269,32 +256,9 @@
                 <button id="modal-ok-btn" class="g-button">OK</button>
             </div>
         </div>
-    </div><!-- Добавьте эти теги перед закрывающим тегом </body> -->
-<audio id="jump-sound" preload="auto">
-    <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" type="audio/mpeg">
-</audio>
+    </div>
 
-<audio id="collision-sound" preload="auto">
-    <source src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-explosion-2759.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="game-over-sound" preload="auto">
-    <source src="https://assets.mixkit.co/sfx/preview/mixkit-losing-bleeps-2026.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="bg-music" preload="auto" loop>
-    <source src="https://assets.mixkit.co/music/preview/mixkit-game-level-music-689.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="click-sound" preload="auto">
-    <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
-</audio>
-
-<video id="bg-video" preload="auto" loop muted playsinline style="display:none;">
-    <source src="https://assets.mixkit.co/videos/preview/mixkit-sky-with-stars-3055.mp4" type="video/mp4">
-</video>
-
-    <script src="game.js"></script>
     <script src="script.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
