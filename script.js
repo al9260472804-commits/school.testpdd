@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const radioInputs = document.querySelectorAll('.radio-input');
     radioInputs.forEach(radio => {
         radio.addEventListener('click', function(e) {
-            // Предотвращаем всплытие, если нужно
             e.stopPropagation();
         });
         
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Функция выделения выбранной радиокнопки
     function highlightSelectedRadio(selectedRadio) {
-        // Снимаем выделение со всех радиокнопок в группе
         const groupName = selectedRadio.name;
         const allRadios = document.querySelectorAll(`input[name="${groupName}"]`);
         
@@ -70,8 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Проверка ответов
         const correctAnswers = {
-            question1: 'no', // Нет, нельзя просто начать переход
-            question2: 'enter-prohibited' // Въезд запрещен
+            question1: 'no',
+            question2: 'enter-prohibited'
         };
         
         let score = 0;
@@ -116,7 +114,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Показать ошибку
     function showError(message) {
-        // Создаем или находим элемент для ошибки
         let errorEl = document.querySelector('.form-error');
         if (!errorEl) {
             errorEl = document.createElement('div');
@@ -137,7 +134,6 @@ document.addEventListener('DOMContentLoaded', function() {
         errorEl.textContent = message;
         errorEl.style.display = 'block';
         
-        // Автоскрытие через 5 секунд
         setTimeout(() => {
             errorEl.style.display = 'none';
         }, 5000);
@@ -204,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Обработка кнопки обратной связи
     feedbackBtn.addEventListener('click', function() {
-        alert('Спасибо за обратную связь! Ваше мнение очень важно для нас. В реальном приложении здесь была бы форма для отправки отзыва.');
+        alert('Спасибо за обратную связь! Ваше мнение очень важно для нас.');
     });
     
     // Подсветка обязательных полей при фокусе
@@ -238,7 +234,6 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const lastQuiz = JSON.parse(savedQuiz)[0];
             if (lastQuiz) {
-                // Восстанавливаем радиокнопки
                 if (lastQuiz.question1) {
                     const radio1 = document.querySelector(`input[name="question1"][value="${lastQuiz.question1}"]`);
                     if (radio1) {
@@ -264,59 +259,3 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ Система викторины готова к работе!');
 });
-
-// Утилиты для работы с формой
-const FormUtils = {
-    // Проверка email (если понадобится)
-    validateEmail: function(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    },
-    
-    // Форматирование текста
-    capitalizeWords: function(str) {
-        return str.split(' ').map(word => 
-            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        ).join(' ');
-    },
-    
-    // Очистка формы
-    clearForm: function() {
-        document.querySelectorAll('input[type="text"]').forEach(input => {
-            input.value = '';
-        });
-        
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.checked = false;
-            const label = radio.closest('.g-control-label');
-            if (label) {
-                label.style.backgroundColor = '';
-                label.style.border = 'none';
-            }
-        });
-        
-        localStorage.removeItem('quizFIO');
-    },
-    
-    // Экспорт данных в JSON
-    exportData: function() {
-        const data = {
-            fio: document.getElementById('fio-input')?.value,
-            question1: document.querySelector('input[name="question1"]:checked')?.value,
-            question2: document.querySelector('input[name="question2"]:checked')?.value,
-            exportedAt: new Date().toISOString()
-        };
-        
-        const jsonStr = JSON.stringify(data, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `quiz-result-${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-};
