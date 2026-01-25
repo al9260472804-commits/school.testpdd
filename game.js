@@ -29,7 +29,14 @@ let highScore = parseInt(localStorage.getItem('gameHighScore')) || 0;
 let lastTime = 0;
 let animationId;
 
-// Создаем видео элемент для игрока
+// ========================================
+// СИСТЕМА УДАЛЕНИЯ ФОНА ИЗ ВИДЕО
+// ========================================
+// Создаем скрытый canvas для обработки видео
+const videoCanvas = document.createElement('canvas');
+const videoCtx = videoCanvas.getContext('2d');
+
+// Создаем видео элемент
 const playerVideo = document.createElement('video');
 playerVideo.src = 'lv_0_20260125005509.mp4'; // Твое видео
 playerVideo.loop = true;
@@ -37,30 +44,97 @@ playerVideo.muted = true;
 playerVideo.playsInline = true;
 playerVideo.preload = 'auto';
 
-// Проверяем загрузку видео
 let videoLoaded = false;
 playerVideo.addEventListener('loadeddata', () => {
     console.log('✅ Видео загружено');
     videoLoaded = true;
+    
+    // Устанавливаем размеры canvas для видео
+    videoCanvas.width = playerVideo.videoWidth;
+    videoCanvas.height = playerVideo.videoHeight;
 });
 
-playerVideo.addEventListener('error', (e) => {
-    console.log('❌ Ошибка загрузки видео:', e);
-    videoLoaded = false;
-});
+// Функция для удаления черного фона
+function removeBlackBackground(sourceCanvas, threshold = 50) {
+    const imageData = videoCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+    const data = imageData.data;
+    
+    // Проходим по всем пикселям
+    for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        
+        // Если пиксель близок к черному (низкая яркость), делаем его прозрачным
+        const brightness = (r + g + b) / 3;
+        if (brightness < threshold) {
+            data[i + 3] = 0; // Устанавливаем полную прозрачность
+        }
+    }
+    
+    return imageData;
+}
 
-// Игрок
+// Функция для рисования обработанного видео
+function drawProcessedVideo() {
+    if (!videoLoaded || playerVideo.readyState < 2) return false;
+    
+    try {
+        // Рисуем видео на скрытом canvas
+        videoCtx.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
+        videoCtx.drawImage(playerVideo, 0, 0, videoCanvas.width, videoCanvas.height);
+        
+        // Удаляем черный фон
+        const processedImage = removeBlackBackground(videoCanvas, 40); // Порог 40
+        
+        // Сохраняем состояние основного canvas
+        ctx.save();
+        
+        // Рисуем обработанное изображение на основном canvas
+        const scale = 0.15; // Масштаб видео
+        const width = videoCanvas.width * scale;
+        const height = videoCanvas.height * scale;
+        
+        // Создаем временный canvas для масштабирования
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        
+        // Масштабируем обработанное изображение
+        tempCtx.putImageData(processedImage, 0, 0, 0, 0, 
+                            videoCanvas.width, videoCanvas.height);
+        
+        // Рисуем на основном canvas
+        if (player.ducking) {
+            ctx.drawImage(tempCanvas, player.x, player.y + 30, width, height * 0.6);
+        } else {
+            ctx.drawImage(tempCanvas, player.x, player.y, width, height);
+        }
+        
+        ctx.restore();
+        return true;
+    } catch (error) {
+        console.log('Ошибка обработки видео:', error);
+        return false;
+    }
+}
+
+// ========================================
+// ИГРОК (упрощенный)
+// ========================================
 const player = {
     x: 50,
     y: 0,
-    width: 60,
-    height: 80,
+    width: 80,  // Увеличил размер для видео
+    height: 120,
     jumping: false,
     ducking: false,
     velocity: 0,
-    gravity: 0.2,      // МЕДЛЕННАЯ гравитация
-    jumpPower: -8,     // МЕДЛЕННЫЙ прыжок
-    groundY: 0
+    gravity: 0.15,      // ОЧЕНЬ МЕДЛЕННАЯ гравитация
+    jumpPower: -14,     // ВЫСОКИЙ прыжок
+    groundY: 0,
+    jumpBoost: 1.5      // Бонус к прыжку
 };
 
 // Массивы объектов
@@ -68,11 +142,20 @@ let obstacles = [];
 let clouds = [];
 let groundOffset = 0;
 
+// Настройки сложности (СДЕЛАЛ ОЧЕНЬ ЛЕГКО)
+const gameSettings = {
+    obstacleSpeed: 1,           // МЕДЛЕННАЯ начальная скорость
+    spawnChance: 0.0015,       // РЕДКИЕ препятствия
+    speedIncrease: 0.0001,     // ОЧЕНЬ медленное увеличение сложности
+    minGap: 300,               // БОЛЬШОЙ разрыв между препятствиями
+    lastObstacleX: 0          // Позиция последнего препятствия
+};
+
 // ========================================
 // ИНИЦИАЛИЗАЦИЯ ИГРЫ
 // ========================================
 function initGame() {
-    console.log('Инициализация игры...');
+    console.log('🎮 Инициализация игры...');
     
     // Устанавливаем размеры canvas
     const container = document.querySelector('.game-container');
@@ -86,17 +169,23 @@ function initGame() {
     player.y = player.groundY;
     
     // Загружаем рекорд
+    highScore = parseInt(localStorage.getItem('gameHighScore')) || 0;
     highScoreElement.textContent = `Рекорд: ${highScore}`;
     menuHighScoreElement.textContent = highScore;
     
-    // Создаем облака (МЕДЛЕННЫЕ)
+    // Сбрасываем настройки
+    gameSettings.obstacleSpeed = 1;
+    gameSettings.spawnChance = 0.0015;
+    gameSettings.lastObstacleX = canvas.width;
+    
+    // Создаем облака
     clouds = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
         clouds.push({
-            x: Math.random() * canvas.width,
+            x: Math.random() * canvas.width * 2,
             y: Math.random() * 150,
-            width: 50 + Math.random() * 50,
-            speed: 0.05 + Math.random() * 0.1  // ОЧЕНЬ МЕДЛЕННО
+            width: 60 + Math.random() * 70,
+            speed: 0.05 + Math.random() * 0.08
         });
     }
     
@@ -124,35 +213,68 @@ function initGame() {
 function drawMenuScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Фон
+    // Красивый градиентный фон
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#1e3c72');
-    gradient.addColorStop(1, '#2a5298');
+    gradient.addColorStop(0, '#0f3460');
+    gradient.addColorStop(1, '#1a1a2e');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Заголовок
+    // Звезды
+    drawStars();
+    
+    // Заголовок с тенью
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 10;
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 30px Arial';
+    ctx.font = 'bold 32px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('🏃 Бегущий динозавр', canvas.width / 2, 80);
+    ctx.fillText('🎮 Бегущий динозавр', canvas.width / 2, 80);
+    ctx.shadowBlur = 0;
     
     // Подзаголовок
-    ctx.font = '16px Arial';
-    ctx.fillText('Избегай препятствия', canvas.width / 2, 120);
+    ctx.font = '18px Arial';
+    ctx.fillStyle = '#b8c1ec';
+    ctx.fillText('Избегай препятствий и ставь рекорды!', canvas.width / 2, 120);
     
-    // Рекорд
-    ctx.font = 'bold 24px Arial';
+    // Рекорд с подсветкой
     ctx.fillStyle = '#f6e05e';
-    ctx.fillText(`Рекорд: ${highScore}`, canvas.width / 2, 180);
+    ctx.font = 'bold 28px Arial';
+    ctx.fillText(`🏆 Рекорд: ${highScore}`, canvas.width / 2, 180);
     
-    // Управление
-    ctx.fillStyle = '#cbd5e0';
+    // Управление в стиле игры
+    ctx.fillStyle = '#a5b4fc';
     ctx.font = '14px Arial';
-    ctx.fillText('👆 Правая часть экрана - Прыжок', canvas.width / 2, 240);
-    ctx.fillText('👇 Левая часть экрана - Пригнуться', canvas.width / 2, 270);
-    ctx.fillText('Пробел или Стрелка ↑ - Прыжок', canvas.width / 2, 300);
-    ctx.fillText('Стрелка ↓ - Пригнуться', canvas.width / 2, 330);
+    ctx.textAlign = 'center';
+    
+    const controls = [
+        '👆 Правый клик/тап - ПРЫЖОК',
+        '👇 Левый клик/тап - ПРИГНУТЬСЯ',
+        '⬆️ Пробел или Стрелка вверх - ПРЫЖОК',
+        '⬇️ Стрелка вниз - ПРИГНУТЬСЯ',
+        '⏸️ P - Пауза'
+    ];
+    
+    controls.forEach((text, index) => {
+        ctx.fillText(text, canvas.width / 2, 240 + index * 25);
+    });
+    
+    // Подсказка
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = 'italic 12px Arial';
+    ctx.fillText('🎯 Цель: набрать 1000+ очков!', canvas.width / 2, 380);
+}
+
+function drawStars() {
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 50; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height * 0.7;
+        const size = Math.random() * 2;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
 }
 
 // ========================================
@@ -161,14 +283,14 @@ function drawMenuScreen() {
 function setupGameEventListeners() {
     // Управление кнопками
     startBtn.addEventListener('click', startGame);
-    pauseBtn.addEventListener('click', pauseGame);
-    resumeBtn.addEventListener('click', resumeGame);
+    pauseBtn.addEventListener('click', togglePause);
+    resumeBtn.addEventListener('click', togglePause);
     restartBtn.addEventListener('click', restartGame);
     menuBtn.addEventListener('click', returnToMenu);
     
     // Управление игрой
     canvas.addEventListener('click', handleCanvasClick);
-    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
 }
@@ -207,6 +329,11 @@ function handleTouchStart(e) {
 }
 
 function handleKeyDown(e) {
+    if (e.code === 'KeyP') {
+        togglePause();
+        return;
+    }
+    
     if (!gameRunning || gamePaused) return;
     
     if (e.code === 'Space' || e.code === 'ArrowUp') {
@@ -227,16 +354,15 @@ function handleKeyUp(e) {
 function jump() {
     if (!player.jumping && gameRunning && !gamePaused) {
         player.jumping = true;
-        player.velocity = player.jumpPower;
+        player.velocity = player.jumpPower * player.jumpBoost;
         player.ducking = false;
-        console.log('Прыжок!');
+        console.log('🦘 Прыжок!');
     }
 }
 
 function duck(start) {
     if (gameRunning && !gamePaused) {
         player.ducking = start;
-        console.log(start ? 'Пригнулся' : 'Встал');
     }
 }
 
@@ -246,7 +372,7 @@ function duck(start) {
 function startGame() {
     if (gameRunning) return;
     
-    console.log('Начало игры');
+    console.log('🚀 Начало игры');
     
     menuScreen.classList.add('hidden');
     gameRunning = true;
@@ -260,6 +386,7 @@ function startGame() {
     player.ducking = false;
     player.y = player.groundY;
     player.velocity = 0;
+    player.jumpBoost = 1.5; // Бонус к прыжку
     
     // Запуск видео
     if (videoLoaded) {
@@ -276,7 +403,7 @@ function startGame() {
 // ========================================
 // ПАУЗА ИГРЫ
 // ========================================
-function pauseGame() {
+function togglePause() {
     if (!gameRunning) return;
     
     gamePaused = !gamePaused;
@@ -284,7 +411,7 @@ function pauseGame() {
     if (gamePaused) {
         cancelAnimationFrame(animationId);
         pauseScreen.classList.add('show');
-        pauseScoreElement.textContent = score;
+        pauseScoreElement.textContent = Math.floor(score);
         
         // Пауза видео
         playerVideo.pause();
@@ -302,15 +429,11 @@ function pauseGame() {
     }
 }
 
-function resumeGame() {
-    pauseGame();
-}
-
 // ========================================
 // ПЕРЕЗАПУСК ИГРЫ
 // ========================================
 function restartGame() {
-    console.log('Перезапуск игры');
+    console.log('🔄 Перезапуск игры');
     
     pauseScreen.classList.remove('show');
     startGame();
@@ -320,7 +443,7 @@ function restartGame() {
 // ВОЗВРАТ В МЕНЮ
 // ========================================
 function returnToMenu() {
-    console.log('Возврат в меню');
+    console.log('🏠 Возврат в меню');
     
     pauseScreen.classList.remove('show');
     gameRunning = false;
@@ -329,8 +452,9 @@ function returnToMenu() {
     
     // Сохраняем рекорд
     if (score > highScore) {
-        highScore = score;
+        highScore = Math.floor(score);
         localStorage.setItem('gameHighScore', highScore);
+        console.log(`🎉 Новый рекорд: ${highScore}!`);
     }
     
     // Пауза видео
@@ -356,12 +480,18 @@ function gameLoop(currentTime) {
 }
 
 // ========================================
-// ОБНОВЛЕНИЕ ИГРЫ
+// ОБНОВЛЕНИЕ ИГРЫ (СДЕЛАЛ ОЧЕНЬ ЛЕГКОЙ)
 // ========================================
 function updateGame(deltaTime) {
-    // Очень медленное увеличение счета
-    score += 0.1;
+    // Медленное увеличение счета
+    score += 0.2; // Быстрее чем 0.1, но все равно медленно
     scoreElement.textContent = Math.floor(score);
+    
+    // Очень медленное увеличение сложности
+    if (score % 100 === 0) {
+        gameSettings.obstacleSpeed += 0.05;
+        gameSettings.spawnChance += 0.0001;
+    }
     
     // Обновляем игрока
     updatePlayer();
@@ -372,8 +502,8 @@ function updateGame(deltaTime) {
     // Обновляем облака
     updateClouds();
     
-    // МЕДЛЕННОЕ движение земли
-    groundOffset = (groundOffset - 0.5) % 50;
+    // Медленное движение земли
+    groundOffset = (groundOffset - 0.3) % 50;
     
     // Проверка столкновений
     checkCollisions();
@@ -384,10 +514,15 @@ function updateGame(deltaTime) {
         highScoreElement.textContent = `Рекорд: ${highScore}`;
         menuHighScoreElement.textContent = highScore;
         
-        // Показываем сообщение о новом рекорде
+        // Показываем сообщение о новом рекорде каждые 100 очков
         if (Math.floor(score) % 100 === 0 && score > 0) {
             showNewRecord();
         }
+    }
+    
+    // Бонус к прыжку каждые 200 очков
+    if (Math.floor(score) % 200 === 0 && score > 0) {
+        player.jumpBoost = Math.min(2.0, 1.5 + score / 1000);
     }
 }
 
@@ -404,25 +539,37 @@ function updatePlayer() {
     }
     
     if (player.ducking && !player.jumping) {
-        player.height = 50;
-        player.y = player.groundY + 30;
+        player.height = 70;
+        player.y = player.groundY + 50;
     } else if (!player.jumping) {
-        player.height = 80;
+        player.height = 120;
         player.y = player.groundY;
     }
 }
 
 function updateObstacles() {
-    // ОЧЕНЬ МЕДЛЕННОЕ создание препятствий
-    if (Math.random() < 0.002) {  // Очень низкая вероятность
-        const height = 40 + Math.random() * 40;
+    // ОЧЕНЬ РЕДКОЕ создание препятствий
+    const canSpawn = canvas.width - gameSettings.lastObstacleX > gameSettings.minGap;
+    
+    if (canSpawn && Math.random() < gameSettings.spawnChance) {
+        const types = [
+            { height: 40, width: 40, color: '#8B0000' },
+            { height: 60, width: 30, color: '#006400' },
+            { height: 50, width: 50, color: '#4B0082' }
+        ];
+        
+        const type = types[Math.floor(Math.random() * types.length)];
+        
         obstacles.push({
             x: canvas.width,
-            y: canvas.height - height - 50,
-            width: 30,
-            height: height,
-            speed: 1 + Math.random() * 1  // ОЧЕНЬ МЕДЛЕННО
+            y: canvas.height - type.height - 50,
+            width: type.width,
+            height: type.height,
+            color: type.color,
+            speed: gameSettings.obstacleSpeed + Math.random() * 0.5
         });
+        
+        gameSettings.lastObstacleX = canvas.width;
     }
     
     // Двигаем препятствия
@@ -431,6 +578,7 @@ function updateObstacles() {
         
         if (obstacles[i].x + obstacles[i].width < 0) {
             obstacles.splice(i, 1);
+            gameSettings.lastObstacleX = 0;
         }
     }
 }
@@ -447,11 +595,14 @@ function updateClouds() {
 }
 
 function checkCollisions() {
+    const playerPadding = 15; // Отступ для более легкого прохождения
+    
     for (let obstacle of obstacles) {
-        if (player.x < obstacle.x + obstacle.width &&
-            player.x + player.width > obstacle.x &&
-            player.y < obstacle.y + obstacle.height &&
-            player.y + player.height > obstacle.y) {
+        if (player.x + playerPadding < obstacle.x + obstacle.width - 10 &&
+            player.x + player.width - playerPadding > obstacle.x + 10 &&
+            player.y + playerPadding < obstacle.y + obstacle.height - 10 &&
+            player.y + player.height - playerPadding > obstacle.y + 10) {
+            
             gameOver();
             return;
         }
@@ -462,7 +613,7 @@ function checkCollisions() {
 // КОНЕЦ ИГРЫ
 // ========================================
 function gameOver() {
-    console.log('Конец игры');
+    console.log('💀 Конец игры. Счет:', Math.floor(score));
     
     gameRunning = false;
     cancelAnimationFrame(animationId);
@@ -471,6 +622,7 @@ function gameOver() {
     if (score > highScore) {
         highScore = Math.floor(score);
         localStorage.setItem('gameHighScore', highScore);
+        console.log(`🎉 Установлен новый рекорд: ${highScore}!`);
     }
     
     // Пауза видео
@@ -479,6 +631,7 @@ function gameOver() {
     // Показываем меню через секунду
     setTimeout(() => {
         menuScreen.classList.remove('hidden');
+        menuHighScoreElement.textContent = highScore;
     }, 1000);
 }
 
@@ -489,10 +642,11 @@ function drawGame() {
     // Очищаем экран
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Небо
+    // Красивый градиент неба
     const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.7);
-    skyGradient.addColorStop(0, '#87CEEB');
-    skyGradient.addColorStop(1, '#E0F7FF');
+    skyGradient.addColorStop(0, '#0c2461');
+    skyGradient.addColorStop(0.5, '#1e3799');
+    skyGradient.addColorStop(1, '#4a69bd');
     ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
     
@@ -502,8 +656,16 @@ function drawGame() {
     // Облака
     drawClouds();
     
-    // Земля
-    drawGround();
+    // Земля с градиентом
+    const groundGradient = ctx.createLinearGradient(0, canvas.height * 0.7, 0, canvas.height);
+    groundGradient.addColorStop(0, '#3c6382');
+    groundGradient.addColorStop(1, '#0a3d62');
+    ctx.fillStyle = groundGradient;
+    ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+    
+    // Трава
+    ctx.fillStyle = '#38ada9';
+    ctx.fillRect(0, canvas.height * 0.7, canvas.width, 15);
     
     // Дорожная разметка
     drawRoadLines();
@@ -511,25 +673,29 @@ function drawGame() {
     // Препятствия
     drawObstacles();
     
-    // Игрок (видео)
+    // Игрок (видео с удаленным фоном)
     drawPlayer();
+    
+    // Эффекты
+    drawEffects();
 }
 
 function drawSun() {
-    ctx.fillStyle = '#FFD700';
+    // Солнце
+    ctx.fillStyle = '#f6b93b';
     ctx.beginPath();
-    ctx.arc(canvas.width - 60, 60, 30, 0, Math.PI * 2);
+    ctx.arc(canvas.width - 70, 70, 35, 0, Math.PI * 2);
     ctx.fill();
     
-    // Лучи солнца
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 3;
-    for (let i = 0; i < 12; i++) {
-        const angle = (i * Math.PI) / 6;
-        const x1 = canvas.width - 60 + Math.cos(angle) * 35;
-        const y1 = 60 + Math.sin(angle) * 35;
-        const x2 = canvas.width - 60 + Math.cos(angle) * 45;
-        const y2 = 60 + Math.sin(angle) * 45;
+    // Лучи
+    ctx.strokeStyle = '#f6b93b';
+    ctx.lineWidth = 4;
+    for (let i = 0; i < 16; i++) {
+        const angle = (i * Math.PI) / 8;
+        const x1 = canvas.width - 70 + Math.cos(angle) * 40;
+        const y1 = 70 + Math.sin(angle) * 40;
+        const x2 = canvas.width - 70 + Math.cos(angle) * 55;
+        const y2 = 70 + Math.sin(angle) * 55;
         
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -539,145 +705,130 @@ function drawSun() {
 }
 
 function drawClouds() {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
     for (let cloud of clouds) {
-        drawCloud(cloud.x, cloud.y, cloud.width);
-    }
-}
-
-function drawCloud(x, y, width) {
-    const height = width * 0.5;
-    ctx.beginPath();
-    ctx.arc(x + width * 0.2, y + height * 0.5, height * 0.4, 0, Math.PI * 2);
-    ctx.arc(x + width * 0.5, y + height * 0.3, height * 0.5, 0, Math.PI * 2);
-    ctx.arc(x + width * 0.8, y + height * 0.5, height * 0.4, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-function drawGround() {
-    // Земля
-    ctx.fillStyle = '#8B4513';
-    ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
-    
-    // Трава
-    ctx.fillStyle = '#228B22';
-    ctx.fillRect(0, canvas.height * 0.7, canvas.width, 10);
-    
-    // Камни
-    ctx.fillStyle = '#696969';
-    for (let i = 0; i < 5; i++) {
-        const stoneX = (i * 100 + groundOffset / 2) % canvas.width;
-        const stoneY = canvas.height * 0.7 + 5;
-        const stoneSize = 10 + Math.random() * 10;
-        
+        // Плавные облака
         ctx.beginPath();
-        ctx.arc(stoneX, stoneY, stoneSize, 0, Math.PI * 2);
+        ctx.arc(cloud.x, cloud.y, cloud.width * 0.2, 0, Math.PI * 2);
+        ctx.arc(cloud.x + cloud.width * 0.3, cloud.y - 10, cloud.width * 0.25, 0, Math.PI * 2);
+        ctx.arc(cloud.x + cloud.width * 0.6, cloud.y, cloud.width * 0.2, 0, Math.PI * 2);
+        ctx.arc(cloud.x + cloud.width * 0.8, cloud.y + 5, cloud.width * 0.15, 0, Math.PI * 2);
         ctx.fill();
     }
 }
 
 function drawRoadLines() {
-    ctx.fillStyle = '#FFFFFF';
-    for (let i = 0; i < canvas.width; i += 100) {
-        ctx.fillRect(i + groundOffset, canvas.height - 30, 50, 5);
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < canvas.width; i += 120) {
+        ctx.fillRect(i + groundOffset, canvas.height - 35, 80, 8);
     }
 }
 
 function drawObstacles() {
-    ctx.fillStyle = '#8B0000';
     for (let obstacle of obstacles) {
-        // Основное тело препятствия
+        // Основное тело с тенью
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetY = 3;
+        
+        ctx.fillStyle = obstacle.color;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         
-        // Детали препятствия
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(obstacle.x + 5, obstacle.y + 5, obstacle.width - 10, 3);
-        ctx.fillRect(obstacle.x + 5, obstacle.y + obstacle.height - 8, obstacle.width - 10, 3);
-        ctx.fillStyle = '#8B0000';
+        // Сброс тени
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
         
-        // Глаза препятствия
-        ctx.fillStyle = '#FFFFFF';
+        // Детали
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(obstacle.x + 5, obstacle.y + 5, obstacle.width - 10, 4);
+        ctx.fillRect(obstacle.x + 5, obstacle.y + obstacle.height - 9, obstacle.width - 10, 4);
+        
+        // Глаза
+        ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(obstacle.x + 10, obstacle.y + 15, 5, 0, Math.PI * 2);
-        ctx.arc(obstacle.x + obstacle.width - 10, obstacle.y + 15, 5, 0, Math.PI * 2);
+        ctx.arc(obstacle.x + 12, obstacle.y + 18, 6, 0, Math.PI * 2);
+        ctx.arc(obstacle.x + obstacle.width - 12, obstacle.y + 18, 6, 0, Math.PI * 2);
         ctx.fill();
         
         ctx.fillStyle = '#000000';
         ctx.beginPath();
-        ctx.arc(obstacle.x + 10, obstacle.y + 15, 2, 0, Math.PI * 2);
-        ctx.arc(obstacle.x + obstacle.width - 10, obstacle.y + 15, 2, 0, Math.PI * 2);
+        ctx.arc(obstacle.x + 12, obstacle.y + 18, 3, 0, Math.PI * 2);
+        ctx.arc(obstacle.x + obstacle.width - 12, obstacle.y + 18, 3, 0, Math.PI * 2);
         ctx.fill();
-        
-        // Улыбка
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(obstacle.x + obstacle.width / 2, obstacle.y + 25, 8, 0, Math.PI);
-        ctx.stroke();
     }
 }
 
 function drawPlayer() {
-    // Пытаемся нарисовать видео
-    if (videoLoaded && playerVideo.readyState >= 2) {
-        try {
-            // Сохраняем состояние контекста
-            ctx.save();
-            
-            // Если пригнулся, рисуем видео меньше
-            if (player.ducking) {
-                ctx.drawImage(playerVideo, player.x, player.y + 30, player.width, 50);
-            } else {
-                ctx.drawImage(playerVideo, player.x, player.y, player.width, player.height);
-            }
-            
-            // Восстанавливаем состояние контекста
-            ctx.restore();
-            return;
-        } catch (error) {
-            console.log('Ошибка рисования видео:', error);
-            videoLoaded = false;
-        }
+    // Пытаемся нарисовать обработанное видео
+    const videoDrawn = drawProcessedVideo();
+    
+    // Если видео не нарисовалось, рисуем запасной вариант
+    if (!videoDrawn) {
+        drawPlayerFallback();
     }
     
-    // Запасной вариант - рисуем прямоугольник
-    drawPlayerFallback();
+    // Добавляем тень под игроком
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.beginPath();
+    ctx.ellipse(player.x + player.width/2, player.groundY + player.height + 5, 
+                player.width/2, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
 }
 
 function drawPlayerFallback() {
-    // Тело игрока (запасной вариант)
-    ctx.fillStyle = '#4169E1';
+    // Тело игрока
+    ctx.fillStyle = '#4a69bd';
     ctx.fillRect(player.x, player.y, player.width, player.height);
     
     // Голова
-    ctx.fillStyle = '#FF6347';
+    ctx.fillStyle = '#6a89cc';
     ctx.beginPath();
-    ctx.arc(player.x + player.width - 10, player.y + 15, 10, 0, Math.PI * 2);
+    ctx.arc(player.x + player.width - 15, player.y + 20, 15, 0, Math.PI * 2);
     ctx.fill();
     
     // Глаз
-    ctx.fillStyle = '#FFFFFF';
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(player.x + player.width - 5, player.y + 12, 3, 0, Math.PI * 2);
+    ctx.arc(player.x + player.width - 8, player.y + 16, 4, 0, Math.PI * 2);
     ctx.fill();
     
-    // Рот
+    // Зрачок
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(player.x + player.width - 7, player.y + 16, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Улыбка
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(player.x + player.width - 12, player.y + 20, 5, 0, Math.PI);
+    ctx.arc(player.x + player.width - 15, player.y + 25, 8, 0, Math.PI);
     ctx.stroke();
     
     // Полоски на теле
-    ctx.fillStyle = '#FFFFFF';
-    for (let i = 0; i < 3; i++) {
-        ctx.fillRect(player.x + 5, player.y + 15 + i * 15, player.width - 10, 3);
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 4; i++) {
+        ctx.fillRect(player.x + 10, player.y + 20 + i * 20, player.width - 20, 4);
+    }
+}
+
+function drawEffects() {
+    // Эффект скорости при высоком счете
+    if (score > 500) {
+        ctx.fillStyle = `rgba(255, 215, 0, ${0.3 + Math.sin(Date.now() / 200) * 0.2})`;
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText('⚡ СКОРОСТЬ!', canvas.width - 20, 40);
     }
     
-    // Надпись "Видео"
-    ctx.fillStyle = '#FF0000';
-    ctx.font = '10px Arial';
-    ctx.fillText('ВИДЕО', player.x + 10, player.y + 40);
+    // Бонус к прыжку
+    if (player.jumpBoost > 1.5) {
+        ctx.fillStyle = `rgba(50, 205, 50, ${0.5 + Math.sin(Date.now() / 300) * 0.3})`;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText(`▲ ПРЫЖОК x${player.jumpBoost.toFixed(1)}`, canvas.width - 20, 60);
+    }
 }
 
 // ========================================
@@ -697,7 +848,7 @@ function showNewRecord() {
 function setupModalControls() {
     if (launchGameBtn) {
         launchGameBtn.addEventListener('click', function() {
-            console.log('Запуск игры');
+            console.log('🎮 Запуск игры');
             gameModal.classList.add('show');
             document.body.style.overflow = 'hidden';
             initGame();
@@ -706,7 +857,7 @@ function setupModalControls() {
     
     if (closeGameBtn) {
         closeGameBtn.addEventListener('click', function() {
-            console.log('Закрытие игры');
+            console.log('❌ Закрытие игры');
             gameModal.classList.remove('show');
             document.body.style.overflow = 'auto';
             
@@ -742,7 +893,7 @@ function setupModalControls() {
 // ЗАГРУЗКА СТРАНИЦЫ
 // ========================================
 window.addEventListener('load', function() {
-    console.log('Страница загружена');
+    console.log('✅ Страница загружена');
     
     // Настраиваем управление модальным окном
     setupModalControls();
@@ -750,10 +901,11 @@ window.addEventListener('load', function() {
     // Предзагрузка видео
     playerVideo.load();
     
-    console.log('✅ Игра готова!');
-    console.log('🐢 Игра настроена на МЕДЛЕННУЮ скорость');
-    console.log('🎬 Используется видео вместо изображения');
+    console.log('🎮 Игра готова!');
+    console.log('🐢 Настроена на ЛЕГКУЮ сложность');
+    console.log('🎬 Система удаления черного фона активирована');
+    console.log('🎯 Цель: 1000+ очков легко достижима!');
 });
 
 // Отладка
-console.log('Версия игры: 2.0 (Медленная версия)');
+console.log('🔥 Версия игры: 3.0 (Супер-легкая с удалением фона)');
