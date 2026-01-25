@@ -1224,3 +1224,54 @@ canvas {
         font-size: 1.8rem;
     }
 }
+/* Стили для скримера */
+#scrimer-modal {
+    animation: fadeIn 0.3s ease;
+}
+
+#scrimer-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Анимация для скримера */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Темный режим для игры */
+.game-container {
+    background: #f7f7f7;
+}
+
+/* Дополнительные стили для динозавра */
+.dino-leg {
+    animation: run 0.3s infinite alternate;
+}
+
+@keyframes run {
+    from { transform: translateY(0); }
+    to { transform: translateY(-3px); }
+}
+
+/* Стиль для сообщения о скримере */
+.scrimer-warning {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    animation: pulse 1s infinite;
+}
