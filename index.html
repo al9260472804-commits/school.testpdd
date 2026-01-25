@@ -6,21 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Временные стили для аватара */
-        .g-avatar__image-placeholder {
-            width: 42px;
-            height: 42px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        
-        /* Стиль для туалета на 4) */
+        /* Временные стили */
         .toilet-banner {
             background: linear-gradient(90deg, #ff6b6b, #ffa8a8);
             color: white;
@@ -40,7 +26,6 @@
             100% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
         }
         
-        /* Заголовок Яндекс Формы с туалетом */
         .yandex-forms-title {
             display: flex;
             align-items: center;
@@ -55,6 +40,25 @@
         @keyframes toilet-bounce {
             from { transform: translateY(0); }
             to { transform: translateY(-5px); }
+        }
+        
+        /* Фото в викторине */
+        .quiz-photo {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: block;
+            border: 3px solid #338ef5;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .photo-caption {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            margin-top: 5px;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -92,9 +96,10 @@
                     </a>
                 </div>
                 <div class="Header-UserSection">
-                    <div class="yc-user-dropdown-avatar" role="button" tabindex="0" title="LebedevArs2011">
-                        <div class="g-avatar" title="LebedevArs2011" role="img">
-                            <div class="g-avatar__image-placeholder">LA</div>
+                    <!-- Убрал LA, оставил просто аватар -->
+                    <div class="g-avatar" title="Гость" role="img">
+                        <div class="g-avatar__image-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            👤
                         </div>
                     </div>
                 </div>
@@ -115,6 +120,14 @@
                     <!-- Основная форма викторины -->
                     <div class="SurveyPage SurveyPage_hasRequired" id="quiz-form">
                         <h1 class="SurveyPage-Name">Викторина по правилам дорожного движения</h1>
+                        
+                        <!-- ФОТО В ВИКТОРИНЕ -->
+                        <div style="text-align: center; margin: 20px 0;">
+                            <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                                 alt="Правила дорожного движения" 
+                                 class="quiz-photo">
+                            <p class="photo-caption">Безопасность на дорогах — наша общая ответственность!</p>
+                        </div>
                         
                         <div class="SurveyPage-Content">
                             <!-- Вопрос 1: ФИО -->
@@ -140,7 +153,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Вопрос 2 -->
+                            <!-- Вопрос 2 с фото -->
                             <div class="QuestionMarkup RadioQuestion Question">
                                 <div class="QuestionMarkup-Column QuestionMarkup-Column_column_left">
                                     <h3 class="QuestionLabel QuestionLayout-Label">
@@ -150,6 +163,12 @@
                                         </span>
                                         <span class="sr-only">Обязательное поле</span>
                                     </h3>
+                                    <!-- Маленькое фото рядом с вопросом -->
+                                    <div style="margin-top: 15px;">
+                                        <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
+                                             alt="Светофор" 
+                                             style="width: 100%; border-radius: 8px; margin-top: 10px;">
+                                    </div>
                                 </div>
                                 <div class="QuestionMarkup-Column QuestionMarkup-Column_column_right">
                                     <div>
@@ -175,7 +194,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Вопрос 3 со знаком -->
+                            <!-- Вопрос 3 со знаком и фото -->
                             <div class="QuestionMarkup RadioQuestion Question">
                                 <div class="QuestionMarkup-Column QuestionMarkup-Column_column_left">
                                     <h3 class="QuestionLabel QuestionLayout-Label">
@@ -183,6 +202,12 @@
                                         <span class="QuestionLabel-Text">Что означает этот знак?</span>
                                         <span class="sr-only">Обязательное поле</span>
                                     </h3>
+                                    <!-- Фото дорожной ситуации -->
+                                    <div style="margin-top: 15px;">
+                                        <img src="https://images.unsplash.com/photo-1549923746-76e6e0c1c29c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
+                                             alt="Дорожная ситуация" 
+                                             style="width: 100%; border-radius: 8px; margin-top: 10px;">
+                                    </div>
                                 </div>
                                 <div class="QuestionMarkup-Column QuestionMarkup-Column_column_right">
                                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Road_sign_3.1_RU.svg/120px-Road_sign_3.1_RU.svg.png" 
@@ -219,6 +244,14 @@
                                 </div>
                             </div>
                             
+                            <!-- Дополнительное фото в конце викторины -->
+                            <div style="text-align: center; margin: 30px 0; padding: 20px; background: rgba(51, 142, 245, 0.1); border-radius: 10px;">
+                                <img src="https://images.unsplash.com/photo-1599159340654-f5bb2bfd5d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                                     alt="Безопасность детей на дороге" 
+                                     style="width: 100%; max-width: 400px; border-radius: 10px; margin-bottom: 10px;">
+                                <p style="color: #999; font-style: italic;">Помните: безопасность на дороге — это важно!</p>
+                            </div>
+                            
                             <!-- Кнопка отправки -->
                             <div class="SurveyPage-Buttons">
                                 <button id="submit-quiz-btn" type="button" class="g-button g-button_view_action SurveyPage-Button">
@@ -234,6 +267,10 @@
                         <div class="SideColumnAdv-line">
                             <div class="ad-sidebar">
                                 <p style="color: #ff6b6b; font-weight: bold;">🚽 Поддержите кампанию<br>"Верните туалет на 4"!</p>
+                                <!-- Рекламное фото -->
+                                <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
+                                     alt="Реклама" 
+                                     style="width: 100%; border-radius: 8px; margin-top: 10px;">
                             </div>
                         </div>
                     </div>
@@ -312,6 +349,13 @@
                 <p>Ваши ответы успешно отправлены.</p>
                 <p>Теперь вы можете выполнить практическое задание — сыграть в игру "Бегущий динозавр".</p>
                 <p class="quiz-result" id="quiz-result"></p>
+                <!-- Фото в модальном окне -->
+                <div style="text-align: center; margin-top: 20px;">
+                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                         alt="Поздравляем!" 
+                         style="width: 100%; max-width: 200px; border-radius: 10px; margin: 0 auto;">
+                    <p style="color: #999; font-size: 14px; margin-top: 5px;">Удачи в игре! 🎮</p>
+                </div>
             </div>
             <div class="modal-footer">
                 <button id="modal-ok-btn" class="g-button">OK</button>
