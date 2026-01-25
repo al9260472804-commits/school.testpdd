@@ -20,6 +20,15 @@ const gameModal = document.getElementById('game-modal');
 const closeGameBtn = document.getElementById('close-game-btn');
 const launchGameBtn = document.getElementById('launch-game-btn');
 
+// Настройки игры
+const GAME_CONFIG = {
+    SCRIMER_TRIGGER: 300,
+    INITIAL_SPEED: 3.5,
+    SHOW_HINT_AT: 150,
+    SPEED_INCREASE: 0.001,
+    MIN_SPAWN_INTERVAL: 600
+};
+
 // Видео элементы
 const playerVideo = document.createElement('video');
 playerVideo.src = 'lv_0_20260125005509.mp4';
@@ -131,7 +140,8 @@ let score = 0;
 let highScore = parseInt(localStorage.getItem('gameHighScore')) || 0;
 let lastTime = 0;
 let animationId;
-let hasShown500Record = localStorage.getItem('shown500Record') === 'true' || false;
+let hasShownScrimer = localStorage.getItem('hasShownScrimer') === 'true' || false;
+let hintShown = false;
 
 // Игрок
 const player = {
@@ -165,12 +175,12 @@ let groundOffset = 0;
 
 // Настройки игры
 const gameSettings = {
-    baseSpeed: 4,
-    currentSpeed: 4,
+    baseSpeed: GAME_CONFIG.INITIAL_SPEED,
+    currentSpeed: GAME_CONFIG.INITIAL_SPEED,
     spawnTimer: 0,
     spawnInterval: 1000,
     minGap: 150,
-    speedIncrease: 0.001,
+    speedIncrease: GAME_CONFIG.SPEED_INCREASE,
     lastScoreSound: 0
 };
 
@@ -306,7 +316,7 @@ function drawMenuScreen() {
     ctx.fillStyle = '#e2e8f0';
     ctx.font = 'bold 28px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('🌙 Ночной динозавр', canvas.width / 2, 80);
+    ctx.fillText('🎮 Тренировка реакции', canvas.width / 2, 80);
     
     ctx.font = '16px Arial';
     ctx.fillStyle = '#cbd5e1';
@@ -316,22 +326,35 @@ function drawMenuScreen() {
     ctx.fillStyle = '#fbbf24';
     ctx.fillText(`🏆 Рекорд: ${highScore}`, canvas.width / 2, 180);
     
-    if (!hasShown500Record) {
+    if (!hasShownScrimer) {
         ctx.font = 'bold 16px Arial';
-        ctx.fillStyle = '#f87171';
-        ctx.fillText('⚠️ 500 очков = СЮРПРИЗ!', canvas.width / 2, 220);
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText(`🎯 Достигни ${GAME_CONFIG.SCRIMER_TRIGGER} очков для оценки "5"!`, canvas.width / 2, 220);
+    } else {
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#10b981';
+        ctx.fillText('✅ Ты уже получил оценку "5"!', canvas.width / 2, 220);
+    }
+    
+    // Прогресс-бар
+    if (highScore > 0) {
+        const progress = Math.min(highScore / GAME_CONFIG.SCRIMER_TRIGGER, 1);
+        ctx.fillStyle = '#4a5568';
+        ctx.fillRect(canvas.width/2 - 100, 250, 200, 10);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(canvas.width/2 - 100, 250, 200 * progress, 10);
+        
+        ctx.font = '12px Arial';
+        ctx.fillStyle = '#cbd5e0';
+        ctx.fillText(`Твой прогресс: ${highScore}/${GAME_CONFIG.SCRIMER_TRIGGER}`, canvas.width / 2, 280);
     }
     
     ctx.font = '14px Arial';
     ctx.fillStyle = '#94a3b8';
-    ctx.fillText('ПРОБЕЛ или СТРЕЛКА ↑ - Прыжок', canvas.width / 2, 270);
-    ctx.fillText('СТРЕЛКА ↓ - Пригнуться', canvas.width / 2, 300);
-    ctx.fillText('P - Пауза', canvas.width / 2, 330);
-    ctx.fillText('M - Вкл/Выкл звук', canvas.width / 2, 360);
-    
-    ctx.font = 'italic 14px Arial';
-    ctx.fillStyle = '#f59e0b';
-    ctx.fillText('🎯 Достигни 500 очков для сюрприза!', canvas.width / 2, 410);
+    ctx.fillText('ПРОБЕЛ или СТРЕЛКА ↑ - Прыжок', canvas.width / 2, 320);
+    ctx.fillText('СТРЕЛКА ↓ - Пригнуться', canvas.width / 2, 350);
+    ctx.fillText('P - Пауза', canvas.width / 2, 380);
+    ctx.fillText('M - Вкл/Выкл звук', canvas.width / 2, 410);
 }
 
 // ========================================
@@ -339,9 +362,9 @@ function drawMenuScreen() {
 // ========================================
 function drawNightSky() {
     const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.7);
-    skyGradient.addColorStop(0, '#0f172a');
-    skyGradient.addColorStop(0.5, '#1e293b');
-    skyGradient.addColorStop(1, '#334155');
+    skyGradient.addColorStop(0, '#0a0f1a');
+    skyGradient.addColorStop(0.5, '#131825');
+    skyGradient.addColorStop(1, '#1a202c');
     ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
     
@@ -617,7 +640,16 @@ function updateGame(deltaTime) {
     
     checkCollisions();
     
-    if (Math.floor(score) >= 500 && !hasShown500Record) {
+    // Показываем подсказку при 150 очках
+    if (Math.floor(score) >= GAME_CONFIG.SHOW_HINT_AT && 
+        Math.floor(score) < GAME_CONFIG.SCRIMER_TRIGGER &&
+        !hintShown) {
+        showScoreHint();
+        hintShown = true;
+    }
+    
+    // Проверка на скример
+    if (Math.floor(score) >= GAME_CONFIG.SCRIMER_TRIGGER && !hasShownScrimer) {
         showScrimer();
         return;
     }
@@ -678,7 +710,7 @@ function updateObstacles(deltaTime) {
             glow: Math.random() > 0.7
         });
         
-        gameSettings.spawnInterval = Math.max(600, 1000 - Math.floor(score / 100) * 40);
+        gameSettings.spawnInterval = Math.max(GAME_CONFIG.MIN_SPAWN_INTERVAL, 1000 - Math.floor(score / 100) * 40);
     }
     
     for (let i = obstaclesArray.length - 1; i >= 0; i--) {
@@ -725,7 +757,38 @@ function checkCollisions() {
 }
 
 // ========================================
-// СКРИМЕР ПРИ 500 ОЧКАХ
+// ПОКАЗАТЬ ПОДСКАЗКУ
+// ========================================
+function showScoreHint() {
+    const hint = document.createElement('div');
+    hint.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(30, 41, 59, 0.95);
+        color: #fbbf24;
+        padding: 15px 25px;
+        border-radius: 10px;
+        border: 2px solid #f59e0b;
+        z-index: 20;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        animation: fadeInOut 3s ease;
+        box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+    `;
+    hint.innerHTML = `🎉 Отлично! ${GAME_CONFIG.SCRIMER_TRIGGER - Math.floor(score)} очков до "5"!`;
+    
+    document.querySelector('.game-container').appendChild(hint);
+    
+    setTimeout(() => {
+        hint.remove();
+    }, 3000);
+}
+
+// ========================================
+// СКРИМЕР ПРИ 300 ОЧКАХ
 // ========================================
 function showScrimer() {
     gameRunning = false;
@@ -735,8 +798,8 @@ function showScrimer() {
     playerVideo.pause();
     audioManager.stopMusic();
     
-    hasShown500Record = true;
-    localStorage.setItem('shown500Record', 'true');
+    hasShownScrimer = true;
+    localStorage.setItem('hasShownScrimer', 'true');
     
     const scrimerModal = document.createElement('div');
     scrimerModal.id = 'scrimer-modal';
@@ -746,97 +809,114 @@ function showScrimer() {
         left: 0;
         width: 100%;
         height: 100%;
-        background: #000;
+        background: #0f172a;
         z-index: 9999;
         display: flex;
         justify-content: center;
         align-items: center;
+        opacity: 0;
+        animation: fadeIn 1s ease forwards;
     `;
     
-    const warningMsg = document.createElement('div');
-    warningMsg.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: #fff;
-        font-size: 32px;
-        font-weight: bold;
+    const congratsScreen = document.createElement('div');
+    congratsScreen.style.cssText = `
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: white;
         text-align: center;
-        z-index: 10000;
-        background: rgba(0,0,0,0.7);
         padding: 20px;
-        border-radius: 10px;
-        animation: pulse 1s infinite;
     `;
-    warningMsg.textContent = '🎉 ПОЗДРАВЛЯЕМ! 500 ОЧКОВ!\n\nЧерез 3 секунды...';
     
-    scrimerModal.appendChild(warningMsg);
-    document.body.appendChild(scrimerModal);
-    
-    setTimeout(() => {
-        warningMsg.remove();
-        
-        const scrimerVideoElement = document.createElement('video');
-        scrimerVideoElement.id = 'scrimer-video';
-        scrimerVideoElement.style.cssText = `
-            max-width: 100%;
-            max-height: 100%;
-            background: #000;
-        `;
-        scrimerVideoElement.autoplay = true;
-        scrimerVideoElement.controls = false;
-        
-        // ЗДЕСЬ ТЫ ДОБАВИШЬ СВОЮ ССЫЛКУ НА СКРИМЕР
-        scrimerVideoElement.src = 'ТВОЯ_ССЫЛКА_НА_СКРИМЕР_ВИДЕО.mp4';
-        
-        scrimerVideoElement.addEventListener('ended', function() {
-            scrimerModal.remove();
-            alert('🎊 Отличная работа! Ты достиг 500 очков!\nТеперь продолжай играть!');
-            returnToMenu();
-        });
-        
-        scrimerVideoElement.addEventListener('error', function() {
-            scrimerModal.remove();
-            alert('🎊 Поздравляем! Ты достиг 500 очков!\n(Видео скримера не загрузилось)');
-            returnToMenu();
-        });
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.textContent = '✕ ПРОПУСТИТЬ';
-        closeBtn.style.cssText = `
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,0,0,0.7);
+    congratsScreen.innerHTML = `
+        <div style="font-size: 36px; margin-bottom: 20px;">🎮</div>
+        <h2 style="color: #fbbf24; margin-bottom: 10px;">Поздравляем!</h2>
+        <p style="font-size: 24px; color: #38bdf8; margin-bottom: 10px;">Ты набрал ${Math.floor(score)} очков!</p>
+        <p style="color: #cbd5e0; margin-bottom: 20px;">Оценка за тренировку: <strong style="color: #10b981;">5</strong></p>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 30px;">
+            Молодец! Твоя реакция на отличном уровне.<br>
+            Продолжай тренироваться!
+        </p>
+        <button id="continue-btn" style="
+            background: linear-gradient(to right, #10b981, #059669);
             color: white;
             border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
             font-size: 16px;
-            padding: 10px 20px;
-            border-radius: 5px;
             cursor: pointer;
-            z-index: 10000;
-            font-weight: bold;
+            margin-top: 20px;
+        ">
+            Продолжить игру
+        </button>
+    `;
+    
+    scrimerModal.appendChild(congratsScreen);
+    document.body.appendChild(scrimerModal);
+    
+    // Через 5 секунд показываем скример
+    setTimeout(() => {
+        congratsScreen.innerHTML = `
+            <div style="color: #f87171; margin-bottom: 10px;">
+                ⚠️ Внимание! Проверка реакции...
+            </div>
+            <p style="color: #cbd5e0; margin-bottom: 20px;">
+                Приготовься к неожиданности через 3 секунды...
+            </p>
+            <div style="font-size: 48px; margin: 20px 0;">3️⃣</div>
         `;
-        closeBtn.addEventListener('click', function() {
-            scrimerVideoElement.pause();
-            scrimerModal.remove();
-            alert('🎊 Поздравляем с 500 очками!');
-            returnToMenu();
-        });
-        
-        scrimerModal.appendChild(scrimerVideoElement);
-        scrimerModal.appendChild(closeBtn);
         
         setTimeout(() => {
-            scrimerVideoElement.play().catch(e => {
-                scrimerModal.remove();
-                alert('🎊 500 очков! Так держать!');
-                returnToMenu();
-            });
-        }, 500);
-        
-    }, 3000);
+            congratsScreen.innerHTML = `
+                <div style="font-size: 48px; margin: 20px 0;">2️⃣</div>
+            `;
+            
+            setTimeout(() => {
+                congratsScreen.innerHTML = `
+                    <div style="font-size: 48px; margin: 20px 0;">1️⃣</div>
+                `;
+                
+                setTimeout(() => {
+                    // ВСТАВЬ ЗДЕСЬ СВОЙ СКРИМЕР
+                    // Пример с GIF
+                    congratsScreen.innerHTML = `
+                        <div style="margin: 20px 0; font-size: 32px; color: #fbbf24;">
+                            🎉 СЮРПРИЗ!
+                        </div>
+                        <img src="https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif" 
+                             style="max-width: 80%; max-height: 60%; border-radius: 10px; margin: 20px 0;">
+                        <div style="color: #38bdf8; margin-top: 20px; font-weight: bold;">
+                            Так держать! Ты отлично справился!
+                        </div>
+                        <button onclick="closeScrimer()" style="
+                            background: #4a5568;
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 6px;
+                            margin-top: 20px;
+                            cursor: pointer;
+                        ">
+                            Закрыть
+                        </button>
+                    `;
+                    
+                }, 1000);
+            }, 1000);
+        }, 1000);
+    }, 5000);
+    
+    window.closeScrimer = function() {
+        scrimerModal.remove();
+        alert(`🎊 Поздравляем! Ты получил 5 за тренировку!\nОчки: ${Math.floor(score)}`);
+        returnToMenu();
+    };
+    
+    document.getElementById('continue-btn')?.addEventListener('click', closeScrimer);
 }
 
 // ========================================
@@ -876,13 +956,14 @@ function drawGame() {
     drawObstacles();
     drawPlayer();
     
-    if (!hasShown500Record && score < 500) {
-        const remaining = 500 - Math.floor(score);
+    // Показываем прогресс до 300 очков
+    if (!hasShownScrimer && score < GAME_CONFIG.SCRIMER_TRIGGER) {
+        const remaining = GAME_CONFIG.SCRIMER_TRIGGER - Math.floor(score);
         if (remaining <= 100) {
             ctx.fillStyle = '#f87171';
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'left';
-            ctx.fillText(`🎯 До сюрприза: ${remaining}`, 10, 25);
+            ctx.fillText(`🎯 До оценки "5": ${remaining} очков`, 10, 25);
         }
     }
 }
