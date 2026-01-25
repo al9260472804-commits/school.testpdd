@@ -11,6 +11,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalOkBtn = document.getElementById('modal-ok-btn');
     const quizResult = document.getElementById('quiz-result');
     
+    // Проверяем, что элементы существуют
+    if (!submitBtn || !fioInput || !successModal) {
+        console.log('Некоторые элементы не найдены');
+        return;
+    }
+    
     // Обработка отправки викторины
     submitBtn.addEventListener('click', function() {
         console.log('Отправка викторины...');
@@ -32,8 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Проверка ответов
         const correctAnswers = {
-            question1: 'no', // Нет, нельзя просто начать переход
-            question2: 'enter-prohibited' // Въезд запрещен
+            question1: 'no',
+            question2: 'enter-prohibited'
         };
         
         let score = 0;
@@ -102,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Показываем модальное окно
         successModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
         
         // Сохраняем результат в localStorage
         const quizResults = JSON.parse(localStorage.getItem('quizResults') || '[]');
@@ -126,10 +133,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Закрытие модального окна
     function closeSuccessModal() {
         successModal.classList.remove('show');
+        document.body.style.overflow = 'auto';
     }
     
-    modalCloseBtn.addEventListener('click', closeSuccessModal);
-    modalOkBtn.addEventListener('click', closeSuccessModal);
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', closeSuccessModal);
+    }
+    
+    if (modalOkBtn) {
+        modalOkBtn.addEventListener('click', closeSuccessModal);
+    }
     
     // Закрытие по клику вне окна
     successModal.addEventListener('click', function(e) {
@@ -139,9 +152,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Обработка кнопки обратной связи
-    feedbackBtn.addEventListener('click', function() {
-        alert('Спасибо за обратную связь! Ваше мнение очень важно для нас. В реальном приложении здесь была бы форма для отправки отзыва.');
-    });
+    if (feedbackBtn) {
+        feedbackBtn.addEventListener('click', function() {
+            alert('Спасибо за обратную связь! Ваше мнение очень важно для нас. В реальном приложении здесь была бы форма для отправки отзыва.');
+        });
+    }
     
     // Анимация для радио-кнопок
     const radioButtons = document.querySelectorAll('input[type="radio"]');
@@ -187,72 +202,8 @@ document.addEventListener('DOMContentLoaded', function() {
         fioInput.value = savedFIO;
     }
     
-    // Инициализация игры
     console.log('Система викторины готова к работе!');
-    
-    // Показать справку по управлению
-    setTimeout(() => {
-        console.log('Подсказка: заполните форму и нажмите "Отправить ответы", затем запустите игру.');
-    }, 1000);
 });
-
-// Утилиты для работы с формой
-const FormUtils = {
-    // Проверка email (если понадобится)
-    validateEmail: function(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    },
-    
-    // Форматирование текста
-    capitalizeWords: function(str) {
-        return str.split(' ').map(word => 
-            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        ).join(' ');
-    },
-    
-    // Очистка формы
-    clearForm: function() {
-        document.querySelectorAll('input[type="text"]').forEach(input => {
-            input.value = '';
-        });
-        
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.checked = false;
-            const label = radio.closest('.g-control-label');
-            if (label) {
-                label.style.backgroundColor = '';
-            }
-        });
-        
-        localStorage.removeItem('quizFIO');
-    },
-    
-    // Экспорт данных в JSON
-    exportData: function() {
-        const data = {
-            fio: document.getElementById('fio-input')?.value,
-            question1: document.querySelector('input[name="question1"]:checked')?.value,
-            question2: document.querySelector('input[name="question2"]:checked')?.value,
-            exportedAt: new Date().toISOString()
-        };
-        
-        const jsonStr = JSON.stringify(data, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `quiz-result-${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-};
-
-// Экспорт утилит в глобальную область видимости
-window.FormUtils = FormUtils;
 
 // Отображение версии приложения
 console.log('Версия приложения: 1.0.0');
