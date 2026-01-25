@@ -2,28 +2,18 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Урок ПДД — Яндекс Формы</title>
+    <title>Урок ПДД</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Баннер туалета на 4 */
+        /* Минималистичный баннер */
         .toilet-banner {
-            background: linear-gradient(90deg, #ff6b6b, #ffa8a8);
-            color: white;
-            padding: 12px 20px;
+            background: #2a4365;
+            color: #cbd5e0;
+            padding: 8px 20px;
             text-align: center;
-            font-weight: bold;
-            font-size: 18px;
-            border-bottom: 3px solid #ff4757;
-            animation: pulse 2s infinite;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            letter-spacing: 1px;
-        }
-        
-        @keyframes pulse {
-            0% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
-            50% { background: linear-gradient(90deg, #ffa8a8, #ff6b6b); }
-            100% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
+            font-size: 14px;
+            border-bottom: 1px solid #4a5568;
         }
         
         .yandex-forms-title {
@@ -33,65 +23,32 @@
         }
         
         .toilet-icon {
-            font-size: 24px;
-            animation: toilet-bounce 1s infinite alternate;
-        }
-        
-        @keyframes toilet-bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-5px); }
+            font-size: 18px;
         }
         
         /* Фото в викторине */
         .quiz-photo {
             width: 100%;
-            max-width: 300px;
-            border-radius: 10px;
-            margin: 20px auto;
+            max-width: 280px;
+            border-radius: 6px;
+            margin: 15px auto;
             display: block;
-            border: 3px solid #338ef5;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 1px solid #4a5568;
         }
         
         .photo-caption {
             text-align: center;
-            color: #999;
+            color: #94a3b8;
             font-style: italic;
             margin-top: 5px;
-            font-size: 14px;
-        }
-        
-        /* Скрытые инструкции для фото */
-        .photo-instructions {
-            display: none;
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
             font-size: 12px;
-            z-index: 10000;
         }
     </style>
 </head>
 <body class="g-root g-root_theme_dark">
-    <!-- ТУАЛЕТ НА 4 БАННЕР -->
+    <!-- Минималистичный баннер -->
     <div class="toilet-banner">
-        🚽 ВЕРНИТЕ ТУАЛЕТ НА 4) | Кампания за справедливость!
-    </div>
-    
-    <!-- Инструкции для фото (показываются при нажатии Ctrl+I) -->
-    <div id="photo-instructions" class="photo-instructions">
-        <strong>КУДА ВСТАВЛЯТЬ ФОТО:</strong><br>
-        1. Основное фото (строка 260): замени ссылку<br>
-        2. Фото к вопросу 1 (строка 285): замени ссылку<br>
-        3. Фото к вопросу 2 (строка 308): замени ссылку<br>
-        4. Дополнительное фото (строка 352): замени ссылку<br>
-        5. Рекламное фото (строка 385): замени ссылку<br>
-        6. Фото в модалке (строка 432): замени ссылку<br>
-        <em>Нажми Ctrl+I чтобы скрыть</em>
+        Урок ПДД
     </div>
     
     <noscript>
@@ -113,17 +70,16 @@
                 <div class="Header-LogoSection">
                     <a href="#" aria-label="Яндекс Формы" class="Logo-LogoLink">
                         <span class="yandex-forms-title">
-                            <div style="width: 24px; height: 24px; background: #FC0; border-radius: 50%;"></div>
-                            <span style="color: #fff; font-weight: bold; font-size: 18px;">
-                                Урок ПДД: Верните туалет на 4)
+                            <div style="width: 20px; height: 20px; background: #FC0; border-radius: 50%;"></div>
+                            <span style="color: #fff; font-weight: bold; font-size: 16px;">
+                                Опрос по ПДД
                             </span>
-                            <span class="toilet-icon">🚽</span>
                         </span>
                     </a>
                 </div>
                 <div class="Header-UserSection">
                     <div class="g-avatar" title="Гость" role="img">
-                        <div class="g-avatar__image-placeholder" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="g-avatar__image-placeholder" style="background: #4a5568;">
                             👤
                         </div>
                     </div>
@@ -137,24 +93,21 @@
                     <!-- Блок запуска игры -->
                     <div class="game-launcher">
                         <button id="launch-game-btn" type="button" class="g-button g-button_view_action">
-                            <span class="g-button__text">🎮 Запустить игру "Бегущий динозавр"</span>
+                            <span class="g-button__text">🎮 Запустить игру</span>
                         </button>
-                        <p class="game-description">Пройди викторину, затем запусти игру</p>
-                        <p style="color: #ff6b6b; font-size: 12px; margin-top: 5px;">
-                            🎯 Достигни 300 очков и получи скример!
-                        </p>
+                        <p class="game-description">Пройди опрос, затем запусти игру</p>
                     </div>
                     
                     <!-- Основная форма викторины -->
                     <div class="SurveyPage SurveyPage_hasRequired" id="quiz-form">
                         <h1 class="SurveyPage-Name">Викторина по правилам дорожного движения</h1>
                         
-                        <!-- ФОТО 1: Основное фото викторины (ЗАМЕНИ ЭТУ ССЫЛКУ!) -->
-                        <div style="text-align: center; margin: 20px 0;">
+                        <!-- Фото в викторине -->
+                        <div style="text-align: center; margin: 15px 0;">
                             <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
                                  alt="Правила дорожного движения" 
                                  class="quiz-photo">
-                            <p class="photo-caption">Безопасность на дорогах — наша общая ответственность!</p>
+                            <p class="photo-caption">Безопасность на дорогах</p>
                         </div>
                         
                         <div class="SurveyPage-Content">
@@ -173,7 +126,7 @@
                                             <span class="g-text-input__content">
                                                 <input class="g-text-input__control" 
                                                        id="fio-input" 
-                                                       placeholder="Иванов Иван Иванович, 5А" 
+                                                       placeholder="Иванов Иван, 5А" 
                                                        required>
                                             </span>
                                         </span>
@@ -181,22 +134,16 @@
                                 </div>
                             </div>
                             
-                            <!-- Вопрос 2 с фото -->
+                            <!-- Вопрос 2 -->
                             <div class="QuestionMarkup RadioQuestion Question">
                                 <div class="QuestionMarkup-Column QuestionMarkup-Column_column_left">
                                     <h3 class="QuestionLabel QuestionLayout-Label">
                                         <span class="QuestionLabel-Required" aria-hidden="true">*</span>
                                         <span class="QuestionLabel-Text">
-                                            Если светофор на перекрестке сломан и мигает желтым светом, пешеход может начать переход, просто убедившись, что машины остановились?
+                                            Если светофор на перекрестке сломан и мигает желтым светом, пешеход может начать переход?
                                         </span>
                                         <span class="sr-only">Обязательное поле</span>
                                     </h3>
-                                    <!-- ФОТО 2: Фото к вопросу 1 (ЗАМЕНИ ЭТУ ССЫЛКУ!) -->
-                                    <div style="margin-top: 15px;">
-                                        <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
-                                             alt="Светофор" 
-                                             style="width: 100%; border-radius: 8px; margin-top: 10px;">
-                                    </div>
                                 </div>
                                 <div class="QuestionMarkup-Column QuestionMarkup-Column_column_right">
                                     <div>
@@ -222,7 +169,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Вопрос 3 со знаком и фото -->
+                            <!-- Вопрос 3 -->
                             <div class="QuestionMarkup RadioQuestion Question">
                                 <div class="QuestionMarkup-Column QuestionMarkup-Column_column_left">
                                     <h3 class="QuestionLabel QuestionLayout-Label">
@@ -230,17 +177,11 @@
                                         <span class="QuestionLabel-Text">Что означает этот знак?</span>
                                         <span class="sr-only">Обязательное поле</span>
                                     </h3>
-                                    <!-- ФОТО 3: Фото дорожной ситуации (ЗАМЕНИ ЭТУ ССЫЛКУ!) -->
-                                    <div style="margin-top: 15px;">
-                                        <img src="https://images.unsplash.com/photo-1549923746-76e6e0c1c29c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
-                                             alt="Дорожная ситуация" 
-                                             style="width: 100%; border-radius: 8px; margin-top: 10px;">
-                                    </div>
                                 </div>
                                 <div class="QuestionMarkup-Column QuestionMarkup-Column_column_right">
                                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Road_sign_3.1_RU.svg/120px-Road_sign_3.1_RU.svg.png" 
                                          class="QuestionLayout-Image" 
-                                         alt="Дорожный знак 'Въезд запрещен'">
+                                         alt="Дорожный знак">
                                     <div>
                                         <div class="g-radio-group" role="radiogroup">
                                             <label class="g-control-label g-radio">
@@ -257,7 +198,7 @@
                                                     <input name="question2" type="radio" value="dead-end" class="radio-input">
                                                     <span class="g-radio__outline"></span>
                                                 </span>
-                                                <span class="g-control-label__text">Впереди тупик</span>
+                                                <span class="g-control-label__text">Тупик</span>
                                             </label>
                                             <label class="g-control-label g-radio">
                                                 <span class="g-control-label__indicator g-radio__indicator">
@@ -270,14 +211,6 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <!-- ФОТО 4: Дополнительное фото в конце викторины (ЗАМЕНИ ЭТУ ССЫЛКУ!) -->
-                            <div style="text-align: center; margin: 30px 0; padding: 20px; background: rgba(51, 142, 245, 0.1); border-radius: 10px;">
-                                <img src="https://images.unsplash.com/photo-1599159340654-f5bb2bfd5d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                                     alt="Безопасность детей на дороге" 
-                                     style="width: 100%; max-width: 400px; border-radius: 10px; margin-bottom: 10px;">
-                                <p style="color: #999; font-style: italic;">Помните: безопасность на дороге — это важно!</p>
                             </div>
                             
                             <!-- Кнопка отправки -->
@@ -294,11 +227,7 @@
                     <div class="SideColumnAdv">
                         <div class="SideColumnAdv-line">
                             <div class="ad-sidebar">
-                                <p style="color: #ff6b6b; font-weight: bold;">🚽 Поддержите кампанию<br>"Верните туалет на 4"!</p>
-                                <!-- ФОТО 5: Рекламное фото (ЗАМЕНИ ЭТУ ССЫЛКУ!) -->
-                                <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
-                                     alt="Реклама" 
-                                     style="width: 100%; border-radius: 8px; margin-top: 10px;">
+                                <p style="color: #94a3b8; font-size: 12px;">Проверь свою реакцию в игре</p>
                             </div>
                         </div>
                     </div>
@@ -307,17 +236,7 @@
             
             <footer class="Footer">
                 <div class="Footer-Link">
-                    Создано пользователем с помощью&nbsp;
-                    <a href="#" class="g-link">Яндекс Форм</a>
-                </div>
-                <div class="Footer-Link">
-                    <button id="feedback-btn" class="g-button" type="button">
-                        <span class="g-button__text">Обратная связь</span>
-                    </button>
-                </div>
-                <div class="Footer-Link">
-                    ©&nbsp;<span id="current-year">2024</span>&nbsp;<a href="https://ya.ru/" class="g-link">Яндекс</a>
-                    <span style="margin-left: 10px; color: #ff6b6b;">🚽 #ВернитеТуалетНа4</span>
+                    © <span id="current-year">2024</span> Яндекс Формы
                 </div>
             </footer>
         </div>
@@ -345,9 +264,6 @@
                         Рекорд: <span id="menu-high-score">0</span>
                     </div>
                     <button id="start-btn" class="btn" type="button">▶️ НАЧАТЬ ИГРУ</button>
-                    <p style="color: #ff6b6b; margin-top: 10px; font-size: 14px;">
-                        🎯 300 очков = СКРИМЕР!
-                    </p>
                 </div>
                 <div id="pause-screen">
                     <h3>⏸ ПАУЗА</h3>
@@ -360,11 +276,8 @@
                 </div>
             </div>
             <div class="game-instructions">
-                <p>👆 Правая часть экрана - Прыжок</p>
-                <p>👇 Левая часть экрана - Пригнуться</p>
-                <p>Пробел или Стрелка ↑ - Прыжок</p>
-                <p>Стрелка ↓ - Пригнуться</p>
-                <p>P - Пауза | M - Звук</p>
+                <p>Пробел или ↑ - Прыжок | ↓ - Пригнуться</p>
+                <p>P - Пауза</p>
             </div>
         </div>
     </div>
@@ -378,15 +291,8 @@
             </div>
             <div class="modal-body">
                 <p>Ваши ответы успешно отправлены.</p>
-                <p>Теперь вы можете выполнить практическое задание — сыграть в игру "Бегущий динозавр".</p>
+                <p>Теперь вы можете запустить игру.</p>
                 <p class="quiz-result" id="quiz-result"></p>
-                <!-- ФОТО 6: Фото в модальном окне (ЗАМЕНИ ЭТУ ССЫЛКУ!) -->
-                <div style="text-align: center; margin-top: 20px;">
-                    <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                         alt="Поздравляем!" 
-                         style="width: 100%; max-width: 200px; border-radius: 10px; margin: 0 auto;">
-                    <p style="color: #999; font-size: 14px; margin-top: 5px;">Удачи в игре! 🎮</p>
-                </div>
             </div>
             <div class="modal-footer">
                 <button id="modal-ok-btn" class="g-button">OK</button>
@@ -395,26 +301,15 @@
     </div>
 
     <!-- Аудио элементы (скрытые) -->
-    <audio id="jump-sound-source" src="jump.mp3" preload="auto"></audio>
-    <audio id="collision-sound-source" src="collision.mp3" preload="auto"></audio>
-    <audio id="duck-sound-source" src="duck.mp3" preload="auto"></audio>
-    <audio id="score-sound-source" src="score.mp3" preload="auto"></audio>
-    <audio id="click-sound-source" src="click.mp3" preload="auto"></audio>
-    <audio id="background-music-source" src="background-music.mp3" preload="auto"></audio>
-    <audio id="game-over-sound-source" src="game-over.mp3" preload="auto"></audio>
+    <audio id="jump-sound-source" preload="auto"></audio>
+    <audio id="collision-sound-source" preload="auto"></audio>
+    <audio id="duck-sound-source" preload="auto"></audio>
+    <audio id="score-sound-source" preload="auto"></audio>
+    <audio id="click-sound-source" preload="auto"></audio>
+    <audio id="background-music-source" preload="auto"></audio>
+    <audio id="game-over-sound-source" preload="auto"></audio>
 
     <script src="script.js"></script>
     <script src="game.js"></script>
-    
-    <script>
-        // Показать инструкции по фото при нажатии Ctrl+I
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'i') {
-                e.preventDefault();
-                const instructions = document.getElementById('photo-instructions');
-                instructions.style.display = instructions.style.display === 'block' ? 'none' : 'block';
-            }
-        });
-    </script>
 </body>
 </html>
