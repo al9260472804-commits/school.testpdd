@@ -24,10 +24,17 @@ const launchGameBtn = document.getElementById('launch-game-btn');
 const GAME_CONFIG = {
     SCRIMER_TRIGGER: 300, // СКРИМЕР на 300 очков
     INITIAL_SPEED: 4,
-    SHOW_HINT_AT: 150,
     SPEED_INCREASE: 0.001,
     MIN_SPAWN_INTERVAL: 600
 };
+
+// ВИДЕО ЭЛЕМЕНТ - ВОЗВРАЩАЕМ!
+const playerVideo = document.createElement('video');
+playerVideo.src = 'lv_0_20260125005509.mp4';
+playerVideo.loop = true;
+playerVideo.muted = false;
+playerVideo.playsInline = true;
+playerVideo.preload = 'auto';
 
 // ========================================
 // СИСТЕМА ЗВУКОВ
@@ -133,7 +140,6 @@ let highScore = parseInt(localStorage.getItem('gameHighScore')) || 0;
 let lastTime = 0;
 let animationId;
 let hasShownScrimer = localStorage.getItem('hasShownScrimer') === 'true' || false;
-let hintShown = false;
 
 // Игрок
 const player = {
@@ -251,6 +257,9 @@ function initGame() {
         audioManager.setVolume(parseFloat(volume));
     }
     
+    // Загружаем видео динозавра
+    playerVideo.load();
+    
     drawMenuScreen();
     setupGameEventListeners();
     addSoundButton();
@@ -318,31 +327,12 @@ function drawMenuScreen() {
     ctx.fillStyle = '#fbbf24';
     ctx.fillText(`🏆 Рекорд: ${highScore}`, canvas.width / 2, 180);
     
-    if (!hasShownScrimer) {
-        ctx.font = 'bold 16px Arial';
-        ctx.fillStyle = '#ff6b6b';
-        ctx.fillText(`⚠️ ${GAME_CONFIG.SCRIMER_TRIGGER} очков = СКРИМЕР!`, canvas.width / 2, 220);
-    }
-    
-    // Прогресс-бар
-    if (highScore > 0) {
-        const progress = Math.min(highScore / GAME_CONFIG.SCRIMER_TRIGGER, 1);
-        ctx.fillStyle = '#4a5568';
-        ctx.fillRect(canvas.width/2 - 100, 250, 200, 10);
-        ctx.fillStyle = '#ff6b6b';
-        ctx.fillRect(canvas.width/2 - 100, 250, 200 * progress, 10);
-        
-        ctx.font = '12px Arial';
-        ctx.fillStyle = '#cbd5e0';
-        ctx.fillText(`Прогресс до скримера: ${highScore}/${GAME_CONFIG.SCRIMER_TRIGGER}`, canvas.width / 2, 280);
-    }
-    
     ctx.font = '14px Arial';
     ctx.fillStyle = '#94a3b8';
-    ctx.fillText('ПРОБЕЛ или СТРЕЛКА ↑ - Прыжок', canvas.width / 2, 320);
-    ctx.fillText('СТРЕЛКА ↓ - Пригнуться', canvas.width / 2, 350);
-    ctx.fillText('P - Пауза', canvas.width / 2, 380);
-    ctx.fillText('M - Вкл/Выкл звук', canvas.width / 2, 410);
+    ctx.fillText('ПРОБЕЛ или СТРЕЛКА ↑ - Прыжок', canvas.width / 2, 240);
+    ctx.fillText('СТРЕЛКА ↓ - Пригнуться', canvas.width / 2, 270);
+    ctx.fillText('P - Пауза', canvas.width / 2, 300);
+    ctx.fillText('M - Вкл/Выкл звук', canvas.width / 2, 330);
 }
 
 // ========================================
@@ -524,6 +514,12 @@ function startGame() {
     gameSettings.spawnTimer = 0;
     gameSettings.lastScoreSound = 0;
     
+    // Запускаем видео динозавра
+    playerVideo.currentTime = 0;
+    playerVideo.play().catch(e => {
+        console.log('Ошибка воспроизведения видео:', e);
+    });
+    
     audioManager.playMusic();
     audioManager.play('click');
     
@@ -544,6 +540,8 @@ function togglePause() {
         pauseScreen.classList.add('show');
         pauseScoreElement.textContent = Math.floor(score);
         
+        // Пауза для видео и музыки
+        playerVideo.pause();
         audioManager.pauseMusic();
         audioManager.play('click');
     } else {
@@ -551,6 +549,8 @@ function togglePause() {
         lastTime = performance.now();
         animationId = requestAnimationFrame(gameLoop);
         
+        // Возобновляем видео и музыку
+        playerVideo.play().catch(e => {});
         audioManager.resumeMusic();
         audioManager.play('click');
     }
@@ -579,6 +579,9 @@ function returnToMenu() {
         localStorage.setItem('gameHighScore', highScore);
     }
     
+    // Останавливаем видео и музыку
+    playerVideo.pause();
+    playerVideo.currentTime = 0;
     audioManager.stopMusic();
     audioManager.play('click');
     
@@ -622,15 +625,7 @@ function updateGame(deltaTime) {
     
     checkCollisions();
     
-    // Показываем подсказку при 150 очках
-    if (Math.floor(score) >= GAME_CONFIG.SHOW_HINT_AT && 
-        Math.floor(score) < GAME_CONFIG.SCRIMER_TRIGGER &&
-        !hintShown) {
-        showScoreHint();
-        hintShown = true;
-    }
-    
-    // Проверка на скример при 300 очках
+    // Проверка на скример при 300 очках (скрытая функция)
     if (Math.floor(score) >= GAME_CONFIG.SCRIMER_TRIGGER && !hasShownScrimer) {
         showScrimer();
         return;
@@ -739,46 +734,15 @@ function checkCollisions() {
 }
 
 // ========================================
-// ПОКАЗАТЬ ПОДСКАЗКУ
-// ========================================
-function showScoreHint() {
-    const hint = document.createElement('div');
-    hint.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(30, 41, 59, 0.95);
-        color: #ff6b6b;
-        padding: 15px 25px;
-        border-radius: 10px;
-        border: 2px solid #ff4757;
-        z-index: 20;
-        text-align: center;
-        font-weight: bold;
-        font-size: 18px;
-        animation: fadeInOut 3s ease;
-        box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
-    `;
-    hint.innerHTML = `🎉 Ещё ${GAME_CONFIG.SCRIMER_TRIGGER - Math.floor(score)} очков до скримера!`;
-    
-    document.querySelector('.game-container').appendChild(hint);
-    
-    setTimeout(() => {
-        hint.remove();
-    }, 3000);
-}
-
-// ========================================
-// СКРИМЕР ПРИ 300 ОЧКАХ
+// СКРИМЕР ПРИ 300 ОЧКАХ (СКРЫТЫЙ)
 // ========================================
 function showScrimer() {
     gameRunning = false;
     gamePaused = false;
     cancelAnimationFrame(animationId);
     
+    playerVideo.pause();
     audioManager.stopMusic();
-    audioManager.play('score');
     
     hasShownScrimer = true;
     localStorage.setItem('hasShownScrimer', 'true');
@@ -814,7 +778,7 @@ function showScrimer() {
         border-radius: 10px;
         animation: pulse 1s infinite;
     `;
-    warningMsg.textContent = '🎉 ПОЗДРАВЛЯЕМ! 300 ОЧКОВ!\n\nЧерез 3 секунды СКРИМЕР...';
+    warningMsg.textContent = '🎉 ПОЗДРАВЛЯЕМ! ТЫ ДОСТИГ 300 ОЧКОВ!\n\nЧерез 3 секунды...';
     
     scrimerModal.appendChild(warningMsg);
     document.body.appendChild(scrimerModal);
@@ -831,10 +795,8 @@ function showScrimer() {
         `;
         scrimerVideoElement.autoplay = true;
         scrimerVideoElement.controls = false;
-        scrimerVideoElement.muted = false;
         
-        // ЗДЕСЬ ВСТАВЬ СВОЁ ВИДЕО СКРИМЕРА!
-        // Пример: scrimerVideoElement.src = 'scrimer-video.mp4';
+        // ВСТАВЬ ЗДЕСЬ СВОЁ ВИДЕО СКРИМЕРА!
         scrimerVideoElement.src = 'ТВОЁ_СКРИМЕР_ВИДЕО.mp4';
         
         scrimerVideoElement.addEventListener('ended', function() {
@@ -850,7 +812,7 @@ function showScrimer() {
         });
         
         const closeBtn = document.createElement('button');
-        closeBtn.textContent = '✕ ПРОПУСТИТЬ СКРИМЕР';
+        closeBtn.textContent = '✕ ПРОПУСТИТЬ';
         closeBtn.style.cssText = `
             position: absolute;
             top: 20px;
@@ -868,7 +830,7 @@ function showScrimer() {
         closeBtn.addEventListener('click', function() {
             scrimerVideoElement.pause();
             scrimerModal.remove();
-            alert('🎊 Поздравляем с 300 очками!');
+            alert('🎊 300 очков! Так держать!');
             returnToMenu();
         });
         
@@ -903,6 +865,8 @@ function gameOver() {
         audioManager.stopMusic();
     }, 500);
     
+    playerVideo.pause();
+    
     setTimeout(() => {
         menuScreen.classList.remove('hidden');
         menuHighScoreElement.textContent = highScore;
@@ -920,17 +884,6 @@ function drawGame() {
     drawGround();
     drawObstacles();
     drawPlayer();
-    
-    // Показываем прогресс до скримера
-    if (!hasShownScrimer && score < GAME_CONFIG.SCRIMER_TRIGGER) {
-        const remaining = GAME_CONFIG.SCRIMER_TRIGGER - Math.floor(score);
-        if (remaining <= 100) {
-            ctx.fillStyle = '#ff6b6b';
-            ctx.font = 'bold 14px Arial';
-            ctx.textAlign = 'left';
-            ctx.fillText(`🎯 До скримера: ${remaining}`, 10, 25);
-        }
-    }
 }
 
 function drawClouds() {
@@ -1019,7 +972,46 @@ function drawObstacles() {
 }
 
 function drawPlayer() {
-    // Рисуем динозавра
+    // Пробуем нарисовать видео динозавра
+    if (playerVideo.readyState >= 2) {
+        try {
+            ctx.save();
+            
+            // Добавляем эффект свечения при высоком счете
+            if (score > 200) {
+                const glow = ctx.createRadialGradient(
+                    player.x + player.width/2, player.y + player.height/2, 0,
+                    player.x + player.width/2, player.y + player.height/2, player.width
+                );
+                glow.addColorStop(0, 'rgba(249, 115, 22, 0.4)');
+                glow.addColorStop(1, 'rgba(249, 115, 22, 0)');
+                
+                ctx.fillStyle = glow;
+                ctx.fillRect(player.x - 10, player.y - 10, player.width + 20, player.height + 20);
+            }
+            
+            // Рисуем видео динозавра
+            if (player.ducking) {
+                ctx.drawImage(playerVideo, player.x, player.y, player.width, player.height);
+            } else {
+                // Добавляем небольшую анимацию прыжка
+                const bounce = player.jumping ? 0 : Math.sin(Date.now() / 100) * 2;
+                ctx.drawImage(playerVideo, player.x, player.y + bounce, player.width, player.height);
+            }
+            
+            ctx.restore();
+            return;
+        } catch (error) {
+            console.log('Ошибка отрисовки видео:', error);
+            // Если видео не загрузилось, рисуем динозавра через графику
+        }
+    }
+    
+    // Резервный вариант: рисуем графического динозавра
+    drawFallbackDinosaur();
+}
+
+function drawFallbackDinosaur() {
     ctx.fillStyle = '#374151';
     ctx.fillRect(player.x, player.y, player.width, player.height);
     
@@ -1084,6 +1076,7 @@ function setupModalControls() {
             gamePaused = false;
             cancelAnimationFrame(animationId);
             
+            playerVideo.pause();
             audioManager.stopMusic();
         });
     }
@@ -1098,6 +1091,7 @@ function setupModalControls() {
                 gamePaused = false;
                 cancelAnimationFrame(animationId);
                 
+                playerVideo.pause();
                 audioManager.stopMusic();
             }
         });
@@ -1109,4 +1103,8 @@ function setupModalControls() {
 // ========================================
 window.addEventListener('load', function() {
     setupModalControls();
+    // Предзагружаем видео при загрузке страницы
+    playerVideo.load().catch(e => {
+        console.log('Ошибка загрузки видео:', e);
+    });
 });
