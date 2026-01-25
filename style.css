@@ -1327,32 +1327,6 @@ canvas {
     box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
 }
 
-/* Анимация нового рекорда для ночи */
-@keyframes nightGlow {
-    0%, 100% { 
-        transform: translate(-50%, -50%) scale(1);
-        box-shadow: 0 0 30px #f59e0b, 0 0 60px #fbbf24;
-    }
-    50% { 
-        transform: translate(-50%, -50%) scale(1.05);
-        box-shadow: 0 0 50px #f59e0b, 0 0 80px #fbbf24;
-    }
-}
-
-#new-record {
-    background: linear-gradient(45deg, #0f172a, #1e293b, #0f172a);
-    background-size: 200% 200%;
-    animation: nightGlow 2s ease-in-out infinite, gradientShift 3s ease infinite;
-    color: #fbbf24;
-    font-size: 2rem;
-    font-weight: 900;
-    padding: 25px 50px;
-    border-radius: 20px;
-    border: 3px solid #f59e0b;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
-}
 
 /* Кнопки в меню (ночная тема) */
 .btn {
