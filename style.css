@@ -1426,3 +1426,55 @@ canvas {
         padding: 10px;
     }
 }
+/* Стили для кнопки звука */
+#sound-toggle-btn {
+    transition: all 0.3s ease;
+}
+
+#sound-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+#sound-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+/* Убираем стили нового рекорда */
+#new-record {
+    display: none !important;
+}
+
+/* Анимация для звуковых эффектов */
+@keyframes soundWave {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.sound-wave {
+    animation: soundWave 0.5s ease;
+}
+
+/* Индикатор звука */
+.sound-indicator {
+    position: absolute;
+    top: 60px;
+    right: 70px;
+    background: rgba(15, 23, 42, 0.9);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    display: none;
+    z-index: 10;
+}
+
+.sound-indicator.show {
+    display: block;
+    animation: fadeInOut 2s ease;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+    20%, 80% { opacity: 1; }
+}
