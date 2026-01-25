@@ -38,9 +38,13 @@ const bgVideo = document.getElementById('bg-video');
 // ========================================
 // ФОТОГРАФИИ (ИСПОЛЬЗУЕМ РАБОЧИЕ ССЫЛКИ)
 // ========================================
-const playerImg = new Image();
-playerImg.src = 'https://files.catbox.moe/tmzfb5.mp4'; // Пикачу
 
+const playerVideo = document.createElement('video');
+playerVideo.src = 'lv_0_20260125005509
+.mp4';  // ← ИМЯ ТВОЕГО ФАЙЛА
+playerVideo.loop = true;
+playerVideo.muted = true;
+playerVideo.playsInline = true;
 const obstacleImg1 = new Image();
 obstacleImg1.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/74.png'; // Геодуд
 
