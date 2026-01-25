@@ -39,7 +39,7 @@ const bgVideo = document.getElementById('bg-video');
 // ФОТОГРАФИИ (ИСПОЛЬЗУЕМ РАБОЧИЕ ССЫЛКИ)
 // ========================================
 const playerImg = new Image();
-playerImg.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png'; // Пикачу
+playerImg.src = 'https://files.catbox.moe/tmzfb5.mp4'; // Пикачу
 
 const obstacleImg1 = new Image();
 obstacleImg1.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/74.png'; // Геодуд
