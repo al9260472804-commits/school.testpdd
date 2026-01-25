@@ -1122,3 +1122,105 @@ canvas {
         margin: 2px 0 !important;
     }
 }
+/* Улучшенный дизайн для игры */
+#game-ui {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid #334155;
+    padding: 12px 20px;
+}
+
+.score-container {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    border: 2px solid #475569;
+    border-radius: 12px;
+    padding: 10px 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+#score {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#high-score {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    font-weight: 600;
+}
+
+#pause-btn {
+    background: linear-gradient(135deg, #475569, #334155);
+    border: 2px solid #64748b;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+#pause-btn:hover {
+    background: linear-gradient(135deg, #64748b, #475569);
+    transform: rotate(90deg);
+}
+
+/* Анимация нового рекорда */
+@keyframes recordGlow {
+    0%, 100% { 
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow: 0 0 30px #fbbf24;
+    }
+    50% { 
+        transform: translate(-50%, -50%) scale(1.05);
+        box-shadow: 0 0 50px #f59e0b;
+    }
+}
+
+#new-record {
+    background: linear-gradient(45deg, #f59e0b, #fbbf24, #f59e0b);
+    background-size: 200% 200%;
+    animation: gradientShift 2s ease infinite, recordGlow 1.5s ease-in-out infinite;
+    color: #1e293b;
+    font-size: 2rem;
+    font-weight: 900;
+    padding: 25px 50px;
+    border-radius: 20px;
+    border: 3px solid #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Подсветка кнопок в меню */
+.btn {
+    background: linear-gradient(to right, #3b82f6, #1d4ed8);
+    margin: 10px 0;
+    border: 2px solid #60a5fa;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    background: linear-gradient(to right, #1d4ed8, #3b82f6);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+/* Адаптивность для видео */
+@media (max-width: 768px) {
+    .player-video {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    #score {
+        font-size: 1.8rem;
+    }
+}
