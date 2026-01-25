@@ -68,8 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Проверка ответов
         const correctAnswers = {
-            question1: 'no',
-            question2: 'enter-prohibited'
+            question1: 'no', // Нет, нельзя просто начать переход
+            question2: 'enter-prohibited' // Въезд запрещен
         };
         
         let score = 0;
@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Обработка кнопки обратной связи
     feedbackBtn.addEventListener('click', function() {
-        alert('Спасибо за обратную связь! Ваше мнение очень важно для нас.');
+        alert('Спасибо за обратную связь! Ваше мнение очень важно для нас. В реальном приложении здесь была бы форма для отправки отзыва.');
     });
     
     // Подсветка обязательных полей при фокусе
@@ -234,6 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const lastQuiz = JSON.parse(savedQuiz)[0];
             if (lastQuiz) {
+                // Восстанавливаем радиокнопки
                 if (lastQuiz.question1) {
                     const radio1 = document.querySelector(`input[name="question1"][value="${lastQuiz.question1}"]`);
                     if (radio1) {
