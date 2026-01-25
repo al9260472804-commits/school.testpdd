@@ -22,20 +22,12 @@ const launchGameBtn = document.getElementById('launch-game-btn');
 
 // Настройки игры
 const GAME_CONFIG = {
-    SCRIMER_TRIGGER: 300,
-    INITIAL_SPEED: 3.5,
+    SCRIMER_TRIGGER: 300, // СКРИМЕР на 300 очков
+    INITIAL_SPEED: 4,
     SHOW_HINT_AT: 150,
     SPEED_INCREASE: 0.001,
     MIN_SPAWN_INTERVAL: 600
 };
-
-// Видео элементы
-const playerVideo = document.createElement('video');
-playerVideo.src = 'lv_0_20260125005509.mp4';
-playerVideo.loop = true;
-playerVideo.muted = true;
-playerVideo.playsInline = true;
-playerVideo.preload = 'auto';
 
 // ========================================
 // СИСТЕМА ЗВУКОВ
@@ -316,7 +308,7 @@ function drawMenuScreen() {
     ctx.fillStyle = '#e2e8f0';
     ctx.font = 'bold 28px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('🎮 Тренировка реакции', canvas.width / 2, 80);
+    ctx.fillText('🌙 Бегущий динозавр', canvas.width / 2, 80);
     
     ctx.font = '16px Arial';
     ctx.fillStyle = '#cbd5e1';
@@ -328,12 +320,8 @@ function drawMenuScreen() {
     
     if (!hasShownScrimer) {
         ctx.font = 'bold 16px Arial';
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillText(`🎯 Достигни ${GAME_CONFIG.SCRIMER_TRIGGER} очков для оценки "5"!`, canvas.width / 2, 220);
-    } else {
-        ctx.font = 'bold 16px Arial';
-        ctx.fillStyle = '#10b981';
-        ctx.fillText('✅ Ты уже получил оценку "5"!', canvas.width / 2, 220);
+        ctx.fillStyle = '#ff6b6b';
+        ctx.fillText(`⚠️ ${GAME_CONFIG.SCRIMER_TRIGGER} очков = СКРИМЕР!`, canvas.width / 2, 220);
     }
     
     // Прогресс-бар
@@ -341,12 +329,12 @@ function drawMenuScreen() {
         const progress = Math.min(highScore / GAME_CONFIG.SCRIMER_TRIGGER, 1);
         ctx.fillStyle = '#4a5568';
         ctx.fillRect(canvas.width/2 - 100, 250, 200, 10);
-        ctx.fillStyle = '#38bdf8';
+        ctx.fillStyle = '#ff6b6b';
         ctx.fillRect(canvas.width/2 - 100, 250, 200 * progress, 10);
         
         ctx.font = '12px Arial';
         ctx.fillStyle = '#cbd5e0';
-        ctx.fillText(`Твой прогресс: ${highScore}/${GAME_CONFIG.SCRIMER_TRIGGER}`, canvas.width / 2, 280);
+        ctx.fillText(`Прогресс до скримера: ${highScore}/${GAME_CONFIG.SCRIMER_TRIGGER}`, canvas.width / 2, 280);
     }
     
     ctx.font = '14px Arial';
@@ -362,9 +350,9 @@ function drawMenuScreen() {
 // ========================================
 function drawNightSky() {
     const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.7);
-    skyGradient.addColorStop(0, '#0a0f1a');
-    skyGradient.addColorStop(0.5, '#131825');
-    skyGradient.addColorStop(1, '#1a202c');
+    skyGradient.addColorStop(0, '#0f172a');
+    skyGradient.addColorStop(0.5, '#1e293b');
+    skyGradient.addColorStop(1, '#334155');
     ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
     
@@ -536,9 +524,6 @@ function startGame() {
     gameSettings.spawnTimer = 0;
     gameSettings.lastScoreSound = 0;
     
-    playerVideo.currentTime = 0;
-    playerVideo.play().catch(e => {});
-    
     audioManager.playMusic();
     audioManager.play('click');
     
@@ -559,7 +544,6 @@ function togglePause() {
         pauseScreen.classList.add('show');
         pauseScoreElement.textContent = Math.floor(score);
         
-        playerVideo.pause();
         audioManager.pauseMusic();
         audioManager.play('click');
     } else {
@@ -567,7 +551,6 @@ function togglePause() {
         lastTime = performance.now();
         animationId = requestAnimationFrame(gameLoop);
         
-        playerVideo.play().catch(e => {});
         audioManager.resumeMusic();
         audioManager.play('click');
     }
@@ -596,7 +579,6 @@ function returnToMenu() {
         localStorage.setItem('gameHighScore', highScore);
     }
     
-    playerVideo.pause();
     audioManager.stopMusic();
     audioManager.play('click');
     
@@ -648,7 +630,7 @@ function updateGame(deltaTime) {
         hintShown = true;
     }
     
-    // Проверка на скример
+    // Проверка на скример при 300 очках
     if (Math.floor(score) >= GAME_CONFIG.SCRIMER_TRIGGER && !hasShownScrimer) {
         showScrimer();
         return;
@@ -767,18 +749,18 @@ function showScoreHint() {
         left: 50%;
         transform: translate(-50%, -50%);
         background: rgba(30, 41, 59, 0.95);
-        color: #fbbf24;
+        color: #ff6b6b;
         padding: 15px 25px;
         border-radius: 10px;
-        border: 2px solid #f59e0b;
+        border: 2px solid #ff4757;
         z-index: 20;
         text-align: center;
         font-weight: bold;
         font-size: 18px;
         animation: fadeInOut 3s ease;
-        box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+        box-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
     `;
-    hint.innerHTML = `🎉 Отлично! ${GAME_CONFIG.SCRIMER_TRIGGER - Math.floor(score)} очков до "5"!`;
+    hint.innerHTML = `🎉 Ещё ${GAME_CONFIG.SCRIMER_TRIGGER - Math.floor(score)} очков до скримера!`;
     
     document.querySelector('.game-container').appendChild(hint);
     
@@ -795,8 +777,8 @@ function showScrimer() {
     gamePaused = false;
     cancelAnimationFrame(animationId);
     
-    playerVideo.pause();
     audioManager.stopMusic();
+    audioManager.play('score');
     
     hasShownScrimer = true;
     localStorage.setItem('hasShownScrimer', 'true');
@@ -809,114 +791,99 @@ function showScrimer() {
         left: 0;
         width: 100%;
         height: 100%;
-        background: #0f172a;
+        background: #000;
         z-index: 9999;
         display: flex;
         justify-content: center;
         align-items: center;
-        opacity: 0;
-        animation: fadeIn 1s ease forwards;
     `;
     
-    const congratsScreen = document.createElement('div');
-    congratsScreen.style.cssText = `
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        color: white;
+    const warningMsg = document.createElement('div');
+    warningMsg.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #fff;
+        font-size: 32px;
+        font-weight: bold;
         text-align: center;
+        z-index: 10000;
+        background: rgba(0,0,0,0.7);
         padding: 20px;
+        border-radius: 10px;
+        animation: pulse 1s infinite;
     `;
+    warningMsg.textContent = '🎉 ПОЗДРАВЛЯЕМ! 300 ОЧКОВ!\n\nЧерез 3 секунды СКРИМЕР...';
     
-    congratsScreen.innerHTML = `
-        <div style="font-size: 36px; margin-bottom: 20px;">🎮</div>
-        <h2 style="color: #fbbf24; margin-bottom: 10px;">Поздравляем!</h2>
-        <p style="font-size: 24px; color: #38bdf8; margin-bottom: 10px;">Ты набрал ${Math.floor(score)} очков!</p>
-        <p style="color: #cbd5e0; margin-bottom: 20px;">Оценка за тренировку: <strong style="color: #10b981;">5</strong></p>
-        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 30px;">
-            Молодец! Твоя реакция на отличном уровне.<br>
-            Продолжай тренироваться!
-        </p>
-        <button id="continue-btn" style="
-            background: linear-gradient(to right, #10b981, #059669);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 20px;
-        ">
-            Продолжить игру
-        </button>
-    `;
-    
-    scrimerModal.appendChild(congratsScreen);
+    scrimerModal.appendChild(warningMsg);
     document.body.appendChild(scrimerModal);
     
-    // Через 5 секунд показываем скример
     setTimeout(() => {
-        congratsScreen.innerHTML = `
-            <div style="color: #f87171; margin-bottom: 10px;">
-                ⚠️ Внимание! Проверка реакции...
-            </div>
-            <p style="color: #cbd5e0; margin-bottom: 20px;">
-                Приготовься к неожиданности через 3 секунды...
-            </p>
-            <div style="font-size: 48px; margin: 20px 0;">3️⃣</div>
+        warningMsg.remove();
+        
+        const scrimerVideoElement = document.createElement('video');
+        scrimerVideoElement.id = 'scrimer-video';
+        scrimerVideoElement.style.cssText = `
+            max-width: 100%;
+            max-height: 100%;
+            background: #000;
         `;
+        scrimerVideoElement.autoplay = true;
+        scrimerVideoElement.controls = false;
+        scrimerVideoElement.muted = false;
+        
+        // ЗДЕСЬ ВСТАВЬ СВОЁ ВИДЕО СКРИМЕРА!
+        // Пример: scrimerVideoElement.src = 'scrimer-video.mp4';
+        scrimerVideoElement.src = 'ТВОЁ_СКРИМЕР_ВИДЕО.mp4';
+        
+        scrimerVideoElement.addEventListener('ended', function() {
+            scrimerModal.remove();
+            alert('🎊 Отличная работа! Ты достиг 300 очков!\nТеперь продолжай играть!');
+            returnToMenu();
+        });
+        
+        scrimerVideoElement.addEventListener('error', function() {
+            scrimerModal.remove();
+            alert('🎊 Поздравляем! Ты достиг 300 очков!\n(Видео скримера не загрузилось)');
+            returnToMenu();
+        });
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✕ ПРОПУСТИТЬ СКРИМЕР';
+        closeBtn.style.cssText = `
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,0,0,0.7);
+            color: white;
+            border: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 10000;
+            font-weight: bold;
+        `;
+        closeBtn.addEventListener('click', function() {
+            scrimerVideoElement.pause();
+            scrimerModal.remove();
+            alert('🎊 Поздравляем с 300 очками!');
+            returnToMenu();
+        });
+        
+        scrimerModal.appendChild(scrimerVideoElement);
+        scrimerModal.appendChild(closeBtn);
         
         setTimeout(() => {
-            congratsScreen.innerHTML = `
-                <div style="font-size: 48px; margin: 20px 0;">2️⃣</div>
-            `;
-            
-            setTimeout(() => {
-                congratsScreen.innerHTML = `
-                    <div style="font-size: 48px; margin: 20px 0;">1️⃣</div>
-                `;
-                
-                setTimeout(() => {
-                    // ВСТАВЬ ЗДЕСЬ СВОЙ СКРИМЕР
-                    // Пример с GIF
-                    congratsScreen.innerHTML = `
-                        <div style="margin: 20px 0; font-size: 32px; color: #fbbf24;">
-                            🎉 СЮРПРИЗ!
-                        </div>
-                        <img src="https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif" 
-                             style="max-width: 80%; max-height: 60%; border-radius: 10px; margin: 20px 0;">
-                        <div style="color: #38bdf8; margin-top: 20px; font-weight: bold;">
-                            Так держать! Ты отлично справился!
-                        </div>
-                        <button onclick="closeScrimer()" style="
-                            background: #4a5568;
-                            color: white;
-                            border: none;
-                            padding: 10px 20px;
-                            border-radius: 6px;
-                            margin-top: 20px;
-                            cursor: pointer;
-                        ">
-                            Закрыть
-                        </button>
-                    `;
-                    
-                }, 1000);
-            }, 1000);
-        }, 1000);
-    }, 5000);
-    
-    window.closeScrimer = function() {
-        scrimerModal.remove();
-        alert(`🎊 Поздравляем! Ты получил 5 за тренировку!\nОчки: ${Math.floor(score)}`);
-        returnToMenu();
-    };
-    
-    document.getElementById('continue-btn')?.addEventListener('click', closeScrimer);
+            scrimerVideoElement.play().catch(e => {
+                scrimerModal.remove();
+                alert('🎊 300 очков! Так держать!');
+                returnToMenu();
+            });
+        }, 500);
+        
+    }, 3000);
 }
 
 // ========================================
@@ -936,8 +903,6 @@ function gameOver() {
         audioManager.stopMusic();
     }, 500);
     
-    playerVideo.pause();
-    
     setTimeout(() => {
         menuScreen.classList.remove('hidden');
         menuHighScoreElement.textContent = highScore;
@@ -956,14 +921,14 @@ function drawGame() {
     drawObstacles();
     drawPlayer();
     
-    // Показываем прогресс до 300 очков
+    // Показываем прогресс до скримера
     if (!hasShownScrimer && score < GAME_CONFIG.SCRIMER_TRIGGER) {
         const remaining = GAME_CONFIG.SCRIMER_TRIGGER - Math.floor(score);
         if (remaining <= 100) {
-            ctx.fillStyle = '#f87171';
+            ctx.fillStyle = '#ff6b6b';
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'left';
-            ctx.fillText(`🎯 До оценки "5": ${remaining} очков`, 10, 25);
+            ctx.fillText(`🎯 До скримера: ${remaining}`, 10, 25);
         }
     }
 }
@@ -1054,42 +1019,11 @@ function drawObstacles() {
 }
 
 function drawPlayer() {
-    if (playerVideo.readyState >= 2) {
-        try {
-            ctx.save();
-            
-            if (score > 200) {
-                const glow = ctx.createRadialGradient(
-                    player.x + player.width/2, player.y + player.height/2, 0,
-                    player.x + player.width/2, player.y + player.height/2, player.width
-                );
-                glow.addColorStop(0, 'rgba(249, 115, 22, 0.4)');
-                glow.addColorStop(1, 'rgba(249, 115, 22, 0)');
-                
-                ctx.fillStyle = glow;
-                ctx.fillRect(player.x - 10, player.y - 10, player.width + 20, player.height + 20);
-            }
-            
-            if (player.ducking) {
-                ctx.drawImage(playerVideo, player.x, player.y, player.width, player.height);
-            } else {
-                const bounce = player.jumping ? 0 : Math.sin(Date.now() / 100) * 2;
-                ctx.drawImage(playerVideo, player.x, player.y + bounce, player.width, player.height);
-            }
-            
-            ctx.restore();
-            return;
-        } catch (error) {}
-    }
-    
-    drawNightDinosaur();
-}
-
-function drawNightDinosaur() {
+    // Рисуем динозавра
     ctx.fillStyle = '#374151';
     ctx.fillRect(player.x, player.y, player.width, player.height);
     
-    if (score > 300) {
+    if (score > 200) {
         ctx.fillStyle = `rgba(249, 115, 22, ${0.3 + Math.sin(Date.now() / 200) * 0.2})`;
         ctx.fillRect(player.x - 5, player.y - 5, player.width + 10, player.height + 10);
     }
@@ -1150,7 +1084,6 @@ function setupModalControls() {
             gamePaused = false;
             cancelAnimationFrame(animationId);
             
-            playerVideo.pause();
             audioManager.stopMusic();
         });
     }
@@ -1165,7 +1098,6 @@ function setupModalControls() {
                 gamePaused = false;
                 cancelAnimationFrame(animationId);
                 
-                playerVideo.pause();
                 audioManager.stopMusic();
             }
         });
@@ -1177,5 +1109,4 @@ function setupModalControls() {
 // ========================================
 window.addEventListener('load', function() {
     setupModalControls();
-    playerVideo.load();
 });
