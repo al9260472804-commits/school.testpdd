@@ -11,10 +11,42 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalOkBtn = document.getElementById('modal-ok-btn');
     const quizResult = document.getElementById('quiz-result');
     
-    // Проверяем, что элементы существуют
-    if (!submitBtn || !fioInput || !successModal) {
-        console.log('Некоторые элементы не найдены');
-        return;
+    // ФИКС: Добавляем обработчики для радиокнопок
+    const radioInputs = document.querySelectorAll('.radio-input');
+    radioInputs.forEach(radio => {
+        radio.addEventListener('click', function(e) {
+            // Предотвращаем всплытие, если нужно
+            e.stopPropagation();
+        });
+        
+        radio.addEventListener('change', function() {
+            console.log('Радиокнопка изменена:', this.name, this.value);
+            highlightSelectedRadio(this);
+        });
+    });
+    
+    // Функция выделения выбранной радиокнопки
+    function highlightSelectedRadio(selectedRadio) {
+        // Снимаем выделение со всех радиокнопок в группе
+        const groupName = selectedRadio.name;
+        const allRadios = document.querySelectorAll(`input[name="${groupName}"]`);
+        
+        allRadios.forEach(radio => {
+            const label = radio.closest('.g-control-label');
+            if (label) {
+                label.style.backgroundColor = '';
+                label.style.borderRadius = '8px';
+                label.style.padding = '8px 12px';
+                label.style.transition = 'background-color 0.3s';
+            }
+        });
+        
+        // Выделяем выбранную
+        const selectedLabel = selectedRadio.closest('.g-control-label');
+        if (selectedLabel) {
+            selectedLabel.style.backgroundColor = 'rgba(51, 142, 245, 0.2)';
+            selectedLabel.style.border = '2px solid #338ef5';
+        }
     }
     
     // Обработка отправки викторины
@@ -38,8 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Проверка ответов
         const correctAnswers = {
-            question1: 'no',
-            question2: 'enter-prohibited'
+            question1: 'no', // Нет, нельзя просто начать переход
+            question2: 'enter-prohibited' // Въезд запрещен
         };
         
         let score = 0;
@@ -65,35 +97,56 @@ document.addEventListener('DOMContentLoaded', function() {
         else if (!document.querySelector('input[name="question1"]:checked')) {
             isValid = false;
             errorMessage = 'Пожалуйста, ответьте на первый вопрос';
+            document.querySelector('input[name="question1"]').closest('.QuestionMarkup-Column').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
         // Проверка второго вопроса
         else if (!document.querySelector('input[name="question2"]:checked')) {
             isValid = false;
             errorMessage = 'Пожалуйста, ответьте на второй вопрос';
+            document.querySelector('input[name="question2"]').closest('.QuestionMarkup-Column').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
         
         if (!isValid) {
-            alert(errorMessage);
+            showError(errorMessage);
             return false;
         }
         
         return true;
     }
     
+    // Показать ошибку
+    function showError(message) {
+        // Создаем или находим элемент для ошибки
+        let errorEl = document.querySelector('.form-error');
+        if (!errorEl) {
+            errorEl = document.createElement('div');
+            errorEl.className = 'form-error';
+            errorEl.style.cssText = `
+                background: rgba(255, 0, 0, 0.1);
+                border: 1px solid #ff3333;
+                color: #ff6666;
+                padding: 12px;
+                border-radius: 8px;
+                margin: 10px 0;
+                text-align: center;
+                animation: fadeIn 0.3s ease;
+            `;
+            submitBtn.parentNode.insertBefore(errorEl, submitBtn);
+        }
+        
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+        
+        // Автоскрытие через 5 секунд
+        setTimeout(() => {
+            errorEl.style.display = 'none';
+        }, 5000);
+    }
+    
     // Показать результаты
     function showResults(formData, score, correctAnswers) {
         const totalQuestions = Object.keys(correctAnswers).length;
         const percentage = Math.round((score / totalQuestions) * 100);
-        
-        let resultText = '';
-        
-        if (score === totalQuestions) {
-            resultText = '🎉 Отлично! Все ответы правильные!';
-        } else if (score >= totalQuestions / 2) {
-            resultText = '👍 Хорошо! Но есть ошибки.';
-        } else {
-            resultText = '📚 Нужно повторить правила дорожного движения.';
-        }
         
         // Формируем детальные результаты
         const details = `
@@ -120,11 +173,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         localStorage.setItem('quizResults', JSON.stringify(quizResults));
         
-        // Показываем кнопку запуска игры
+        // Активируем кнопку запуска игры
         setTimeout(() => {
             const launchBtn = document.getElementById('launch-game-btn');
             if (launchBtn) {
+                launchBtn.disabled = false;
                 launchBtn.style.animation = 'pulse 2s infinite';
+                launchBtn.style.opacity = '1';
+                launchBtn.style.cursor = 'pointer';
                 launchBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }, 500);
@@ -136,13 +192,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = 'auto';
     }
     
-    if (modalCloseBtn) {
-        modalCloseBtn.addEventListener('click', closeSuccessModal);
-    }
-    
-    if (modalOkBtn) {
-        modalOkBtn.addEventListener('click', closeSuccessModal);
-    }
+    modalCloseBtn.addEventListener('click', closeSuccessModal);
+    modalOkBtn.addEventListener('click', closeSuccessModal);
     
     // Закрытие по клику вне окна
     successModal.addEventListener('click', function(e) {
@@ -152,31 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Обработка кнопки обратной связи
-    if (feedbackBtn) {
-        feedbackBtn.addEventListener('click', function() {
-            alert('Спасибо за обратную связь! Ваше мнение очень важно для нас. В реальном приложении здесь была бы форма для отправки отзыва.');
-        });
-    }
-    
-    // Анимация для радио-кнопок
-    const radioButtons = document.querySelectorAll('input[type="radio"]');
-    radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
-            // Удаляем выделение у всех радио-кнопок в группе
-            const groupName = this.name;
-            document.querySelectorAll(`input[name="${groupName}"]`).forEach(r => {
-                const label = r.closest('.g-control-label');
-                if (label) {
-                    label.style.backgroundColor = '';
-                }
-            });
-            
-            // Добавляем выделение к выбранной
-            const selectedLabel = this.closest('.g-control-label');
-            if (selectedLabel) {
-                selectedLabel.style.backgroundColor = 'rgba(51, 142, 245, 0.1)';
-            }
-        });
+    feedbackBtn.addEventListener('click', function() {
+        alert('Спасибо за обратную связь! Ваше мнение очень важно для нас. В реальном приложении здесь была бы форма для отправки отзыва.');
     });
     
     // Подсветка обязательных полей при фокусе
@@ -184,10 +212,12 @@ document.addEventListener('DOMContentLoaded', function() {
     requiredInputs.forEach(input => {
         input.addEventListener('focus', function() {
             this.style.boxShadow = '0 0 0 3px rgba(51, 142, 245, 0.3)';
+            this.style.borderColor = '#338ef5';
         });
         
         input.addEventListener('blur', function() {
             this.style.boxShadow = '';
+            this.style.borderColor = '#444';
         });
     });
     
@@ -202,9 +232,91 @@ document.addEventListener('DOMContentLoaded', function() {
         fioInput.value = savedFIO;
     }
     
-    console.log('Система викторины готова к работе!');
+    // Восстановление выбранных радиокнопок
+    const savedQuiz = localStorage.getItem('quizResults');
+    if (savedQuiz) {
+        try {
+            const lastQuiz = JSON.parse(savedQuiz)[0];
+            if (lastQuiz) {
+                // Восстанавливаем радиокнопки
+                if (lastQuiz.question1) {
+                    const radio1 = document.querySelector(`input[name="question1"][value="${lastQuiz.question1}"]`);
+                    if (radio1) {
+                        radio1.checked = true;
+                        highlightSelectedRadio(radio1);
+                    }
+                }
+                if (lastQuiz.question2) {
+                    const radio2 = document.querySelector(`input[name="question2"][value="${lastQuiz.question2}"]`);
+                    if (radio2) {
+                        radio2.checked = true;
+                        highlightSelectedRadio(radio2);
+                    }
+                }
+            }
+        } catch (e) {
+            console.log('Ошибка восстановления данных:', e);
+        }
+    }
+    
+    // Установка текущего года в футере
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+    
+    console.log('✅ Система викторины готова к работе!');
 });
 
-// Отображение версии приложения
-console.log('Версия приложения: 1.0.0');
-console.log('Дата сборки: ' + new Date().toLocaleDateString('ru-RU'));
+// Утилиты для работы с формой
+const FormUtils = {
+    // Проверка email (если понадобится)
+    validateEmail: function(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    },
+    
+    // Форматирование текста
+    capitalizeWords: function(str) {
+        return str.split(' ').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        ).join(' ');
+    },
+    
+    // Очистка формы
+    clearForm: function() {
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            input.value = '';
+        });
+        
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.checked = false;
+            const label = radio.closest('.g-control-label');
+            if (label) {
+                label.style.backgroundColor = '';
+                label.style.border = 'none';
+            }
+        });
+        
+        localStorage.removeItem('quizFIO');
+    },
+    
+    // Экспорт данных в JSON
+    exportData: function() {
+        const data = {
+            fio: document.getElementById('fio-input')?.value,
+            question1: document.querySelector('input[name="question1"]:checked')?.value,
+            question2: document.querySelector('input[name="question2"]:checked')?.value,
+            exportedAt: new Date().toISOString()
+        };
+        
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `quiz-result-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+};
