@@ -981,3 +981,144 @@ canvas {
     max-height: 90vh;
     overflow-y: auto;
 }
+/* Исправления для радиокнопок */
+.g-radio input[type="radio"] {
+    position: absolute !important;
+    opacity: 1 !important;
+    width: 20px !important;
+    height: 20px !important;
+    cursor: pointer !important;
+    z-index: 10 !important;
+    pointer-events: auto !important;
+}
+
+.g-control-label {
+    cursor: pointer !important;
+    position: relative !important;
+    transition: all 0.3s ease !important;
+}
+
+.g-control-label:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.g-control-label__indicator {
+    position: relative !important;
+    z-index: 5 !important;
+}
+
+/* Выделение выбранной радиокнопки */
+.g-control-label.selected {
+    background-color: rgba(51, 142, 245, 0.2) !important;
+    border: 2px solid #338ef5 !important;
+    border-radius: 8px !important;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(51, 142, 245, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(51, 142, 245, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(51, 142, 245, 0); }
+}
+
+/* Кнопка запуска игры */
+#launch-game-btn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    animation: none !important;
+}
+
+#launch-game-btn.enabled {
+    opacity: 1 !important;
+    cursor: pointer !important;
+    animation: pulse 2s infinite !important;
+}
+
+/* Сообщение о новом рекорде */
+#new-record {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0);
+    background-size: 300% 300%;
+    color: white;
+    font-size: 1.8rem;
+    font-weight: bold;
+    padding: 20px 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 20;
+    display: none;
+    text-align: center;
+    animation: gradient 3s ease infinite, fadeIn 0.5s ease;
+    border: 3px solid white;
+}
+
+#new-record.show {
+    display: block;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Медленная анимация облаков */
+.cloud {
+    animation: cloudMove 20s linear infinite;
+}
+
+@keyframes cloudMove {
+    from { transform: translateX(100%); }
+    to { transform: translateX(-100%); }
+}
+
+/* Улучшенный скролл */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #338ef5;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #297cd3;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+    .game-container {
+        height: 250px !important;
+    }
+    
+    #game-ui {
+        padding: 5px !important;
+    }
+    
+    #score {
+        font-size: 1.2rem !important;
+    }
+    
+    #high-score {
+        font-size: 0.8rem !important;
+    }
+    
+    .game-instructions p {
+        font-size: 0.7rem !important;
+        margin: 2px 0 !important;
+    }
+}
