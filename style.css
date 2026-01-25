@@ -902,3 +902,82 @@ canvas {
 ::-webkit-scrollbar-thumb:hover {
     background: #297cd3;
 }
+/* Исправления для кнопок */
+.g-button {
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.g-button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.g-button:active {
+    transform: translateY(0) !important;
+}
+
+/* Фикс для радио-кнопок */
+.g-control-label {
+    cursor: pointer;
+    user-select: none;
+}
+
+.g-radio input[type="radio"] {
+    cursor: pointer;
+}
+
+/* Улучшение отображения модальных окон */
+.modal-overlay.show {
+    display: flex !important;
+    opacity: 1 !important;
+}
+
+.game-modal.show {
+    display: flex !important;
+    opacity: 1 !important;
+}
+
+/* Анимация кнопки запуска игры */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(51, 142, 245, 0.7);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(51, 142, 245, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(51, 142, 245, 0);
+    }
+}
+
+/* Улучшение отзывчивости */
+@media (max-width: 768px) {
+    .game-container {
+        height: 300px !important;
+    }
+    
+    #game-ui {
+        padding: 10px !important;
+    }
+    
+    .game-modal-content {
+        margin: 10px !important;
+        max-height: 90vh !important;
+    }
+}
+
+/* Улучшение доступности */
+:focus {
+    outline: 2px solid #338ef5 !important;
+    outline-offset: 2px !important;
+}
+
+/* Улучшение скролла */
+.game-modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
