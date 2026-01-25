@@ -2,9 +2,61 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Викторина по правилам дорожного движения — Верните туалет на 4)</title>
+    <title>Верните туалет на 4 — Яндекс Формы</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Временные стили для аватара */
+        .g-avatar__image-placeholder {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* Стиль для туалета на 4) */
+        .toilet-banner {
+            background: linear-gradient(90deg, #ff6b6b, #ffa8a8);
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            border-bottom: 3px solid #ff4757;
+            animation: pulse 2s infinite;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+        
+        @keyframes pulse {
+            0% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
+            50% { background: linear-gradient(90deg, #ffa8a8, #ff6b6b); }
+            100% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
+        }
+        
+        /* Заголовок Яндекс Формы с туалетом */
+        .yandex-forms-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toilet-icon {
+            font-size: 24px;
+            animation: toilet-bounce 1s infinite alternate;
+        }
+        
+        @keyframes toilet-bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+    </style>
 </head>
 <body class="g-root g-root_theme_dark">
     <noscript>
@@ -20,14 +72,22 @@
         </div>
     </noscript>
     
+    <!-- ТУАЛЕТ НА 4) БАННЕР -->
+    <div class="toilet-banner">
+        🚽 ВЕРНИТЕ ТУАЛЕТ НА 4) | Кампания за справедливость!
+    </div>
+    
     <div id="root">
         <div class="Layout">
             <header class="Header">
                 <div class="Header-LogoSection">
                     <a href="#" aria-label="Яндекс Формы" class="Logo-LogoLink">
-                        <span style="display: flex; align-items: center; color: #fff; font-weight: bold; font-size: 18px;">
-                            <div style="width: 24px; height: 24px; background: #FC0; border-radius: 50%; margin-right: 8px;"></div>
-                            Яндекс Формы
+                        <span class="yandex-forms-title">
+                            <div style="width: 24px; height: 24px; background: #FC0; border-radius: 50%;"></div>
+                            <span style="color: #fff; font-weight: bold; font-size: 18px;">
+                                Верните туалет на 4
+                            </span>
+                            <span class="toilet-icon">🚽</span>
                         </span>
                     </a>
                 </div>
@@ -47,9 +107,9 @@
                     <!-- Блок запуска игры -->
                     <div class="game-launcher">
                         <button id="launch-game-btn" type="button" class="g-button g-button_view_action">
-                            <span class="g-button__text">🎮 Выполнить: Запустить игру "Бегущий динозавр"</span>
+                            <span class="g-button__text">🎮 Запустить игру "Бегущий динозавр"</span>
                         </button>
-                        <p class="game-description">После прохождения викторины выполните это задание</p>
+                        <p class="game-description">Пройди викторину, затем запусти игру</p>
                     </div>
                     
                     <!-- Основная форма викторины -->
@@ -173,7 +233,7 @@
                     <div class="SideColumnAdv">
                         <div class="SideColumnAdv-line">
                             <div class="ad-sidebar">
-                                <p>Реклама Яндекс</p>
+                                <p style="color: #ff6b6b; font-weight: bold;">🚽 Поддержите кампанию<br>"Верните туалет на 4"!</p>
                             </div>
                         </div>
                     </div>
@@ -192,6 +252,7 @@
                 </div>
                 <div class="Footer-Link">
                     ©&nbsp;<span id="current-year">2024</span>&nbsp;<a href="https://ya.ru/" class="g-link">Яндекс</a>
+                    <span style="margin-left: 10px; color: #ff6b6b;">🚽 #ВернитеТуалетНа4</span>
                 </div>
             </footer>
         </div>
@@ -229,13 +290,13 @@
                     <button id="restart-btn" class="btn" type="button">🔄 НАЧАТЬ ЗАНОВО</button>
                     <button id="menu-btn" class="btn" type="button">🏠 ЗАКРЫТЬ</button>
                 </div>
-
             </div>
             <div class="game-instructions">
                 <p>👆 Правая часть экрана - Прыжок</p>
                 <p>👇 Левая часть экрана - Пригнуться</p>
                 <p>Пробел или Стрелка ↑ - Прыжок</p>
                 <p>Стрелка ↓ - Пригнуться</p>
+                <p>P - Пауза | M - Звук</p>
             </div>
         </div>
     </div>
@@ -257,6 +318,38 @@
             </div>
         </div>
     </div>
+
+    <!-- Модальное окно видео при поражении -->
+    <div id="game-over-video-modal" class="game-modal" style="display: none;">
+        <div class="game-modal-content" style="max-width: 800px;">
+            <div class="game-modal-header">
+                <h2>💀 Поражение!</h2>
+                <button id="close-game-over-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="game-over-video-container" style="padding: 20px; text-align: center;">
+                <p style="color: #fff; margin-bottom: 15px; font-size: 18px;">
+                    Ты набрал <span id="final-score" style="color: #fbbf24; font-weight: bold;">0</span> очков!
+                </p>
+                <video id="game-over-video" width="100%" height="auto" controls style="border-radius: 10px;">
+                    <source src="game-over-video.mp4" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                </video>
+                <div style="margin-top: 20px;">
+                    <button id="play-again-btn" class="btn" style="margin-right: 10px;">🔄 Играть снова</button>
+                    <button id="back-to-menu-btn" class="btn">🏠 В меню</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Аудио элементы (скрытые) -->
+    <audio id="jump-sound-source" src="jump.mp3" preload="auto"></audio>
+    <audio id="collision-sound-source" src="collision.mp3" preload="auto"></audio>
+    <audio id="duck-sound-source" src="duck.mp3" preload="auto"></audio>
+    <audio id="score-sound-source" src="score.mp3" preload="auto"></audio>
+    <audio id="click-sound-source" src="click.mp3" preload="auto"></audio>
+    <audio id="background-music-source" src="background-music.mp3" preload="auto"></audio>
+    <audio id="game-over-sound-source" src="game-over.mp3" preload="auto"></audio>
 
     <script src="script.js"></script>
     <script src="game.js"></script>
