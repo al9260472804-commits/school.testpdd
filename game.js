@@ -22,7 +22,7 @@ const launchGameBtn = document.getElementById('launch-game-btn');
 
 // Видео элементы
 const playerVideo = document.createElement('video');
-playerVideo.src = 'lv_0_20260125005509.mp4'; // Твое видео
+playerVideo.src = 'lv_0_20260125005509.mp4';
 playerVideo.loop = true;
 playerVideo.muted = true;
 playerVideo.playsInline = true;
@@ -37,7 +37,6 @@ const audioManager = {
     enabled: true,
     
     init: function() {
-        // Создаем аудио элементы
         this.sounds = {
             jump: this.createAudio('jump.mp3'),
             collision: this.createAudio('collision.mp3'),
@@ -49,7 +48,6 @@ const audioManager = {
         this.music = this.createAudio('background-music.mp3', true);
         this.music.volume = 0.3;
         
-        // Загружаем звуки
         this.preloadSounds();
     },
     
@@ -62,7 +60,6 @@ const audioManager = {
     },
     
     preloadSounds: function() {
-        // Предзагрузка всех звуков
         Object.values(this.sounds).forEach(sound => {
             sound.load();
         });
@@ -75,9 +72,7 @@ const audioManager = {
         const sound = this.sounds[soundName];
         if (sound) {
             sound.currentTime = 0;
-            sound.play().catch(e => {
-                console.log('Не удалось воспроизвести звук:', soundName, e);
-            });
+            sound.play().catch(e => {});
         }
     },
     
@@ -85,9 +80,7 @@ const audioManager = {
         if (!this.enabled) return;
         
         this.music.currentTime = 0;
-        this.music.play().catch(e => {
-            console.log('Не удалось воспроизвести музыку:', e);
-        });
+        this.music.play().catch(e => {});
     },
     
     pauseMusic: function() {
@@ -102,9 +95,7 @@ const audioManager = {
     resumeMusic: function() {
         if (!this.enabled) return;
         
-        this.music.play().catch(e => {
-            console.log('Не удалось возобновить музыку:', e);
-        });
+        this.music.play().catch(e => {});
     },
     
     toggleSound: function() {
@@ -116,7 +107,6 @@ const audioManager = {
             this.resumeMusic();
         }
         
-        // Сохраняем настройку
         localStorage.setItem('soundEnabled', this.enabled);
         
         return this.enabled;
@@ -209,33 +199,27 @@ function createStars() {
 function initGame() {
     console.log('🎮 Инициализация игры...');
     
-    // Устанавливаем размеры canvas
     const container = document.querySelector('.game-container');
     if (!container) return;
     
     canvas.width = container.clientWidth;
     canvas.height = container.height || 400;
     
-    // Создаем звезды
     createStars();
     
-    // Настраиваем игрока
     player.groundY = canvas.height - player.height - 10;
     player.y = player.groundY;
     player.currentFrame = 0;
     player.frameTimer = 0;
     
-    // Загружаем рекорд
     highScore = parseInt(localStorage.getItem('gameHighScore')) || 0;
     highScoreElement.textContent = `Рекорд: ${highScore}`;
     menuHighScoreElement.textContent = highScore;
     
-    // Сбрасываем настройки
     gameSettings.currentSpeed = gameSettings.baseSpeed;
     gameSettings.spawnTimer = 0;
     gameSettings.lastScoreSound = 0;
     
-    // Создаем облака
     clouds = [];
     for (let i = 0; i < 3; i++) {
         clouds.push({
@@ -246,21 +230,15 @@ function initGame() {
         });
     }
     
-    // Очищаем препятствия
     obstaclesArray = [];
-    
-    // Сбрасываем счет
     score = 0;
     scoreElement.textContent = 0;
     
-    // Показываем меню
     menuScreen.classList.remove('hidden');
     pauseScreen.classList.remove('show');
     
-    // Инициализируем аудио
     audioManager.init();
     
-    // Загружаем настройки звука
     const soundEnabled = localStorage.getItem('soundEnabled');
     if (soundEnabled !== null) {
         audioManager.enabled = soundEnabled === 'true';
@@ -271,13 +249,8 @@ function initGame() {
         audioManager.setVolume(parseFloat(volume));
     }
     
-    // Рисуем меню
     drawMenuScreen();
-    
-    // Настраиваем обработчики событий
     setupGameEventListeners();
-    
-    // Добавляем кнопку звука
     addSoundButton();
 }
 
@@ -285,7 +258,6 @@ function initGame() {
 // ДОБАВЛЕНИЕ КНОПКИ ЗВУКА
 // ========================================
 function addSoundButton() {
-    // Проверяем, есть ли уже кнопка
     if (document.getElementById('sound-toggle-btn')) return;
     
     const soundBtn = document.createElement('button');
@@ -314,8 +286,6 @@ function addSoundButton() {
         const enabled = audioManager.toggleSound();
         this.textContent = enabled ? '🔊' : '🔇';
         this.title = enabled ? 'Выключить звук' : 'Включить звук';
-        
-        // Проигрываем звук клика
         audioManager.play('click');
     });
     
@@ -331,33 +301,27 @@ function addSoundButton() {
 function drawMenuScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Ночной фон
     drawNightSky();
     
-    // Заголовок
     ctx.fillStyle = '#e2e8f0';
     ctx.font = 'bold 28px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('🌙 Ночной динозавр', canvas.width / 2, 80);
     
-    // Подзаголовок
     ctx.font = '16px Arial';
     ctx.fillStyle = '#cbd5e1';
     ctx.fillText('Беги под луной! Пробел или ↑ для прыжка', canvas.width / 2, 120);
     
-    // Рекорд
     ctx.font = 'bold 24px Arial';
     ctx.fillStyle = '#fbbf24';
     ctx.fillText(`🏆 Рекорд: ${highScore}`, canvas.width / 2, 180);
     
-    // Предупреждение о скримере
     if (!hasShown500Record) {
         ctx.font = 'bold 16px Arial';
         ctx.fillStyle = '#f87171';
         ctx.fillText('⚠️ 500 очков = СЮРПРИЗ!', canvas.width / 2, 220);
     }
     
-    // Управление
     ctx.font = '14px Arial';
     ctx.fillStyle = '#94a3b8';
     ctx.fillText('ПРОБЕЛ или СТРЕЛКА ↑ - Прыжок', canvas.width / 2, 270);
@@ -365,7 +329,6 @@ function drawMenuScreen() {
     ctx.fillText('P - Пауза', canvas.width / 2, 330);
     ctx.fillText('M - Вкл/Выкл звук', canvas.width / 2, 360);
     
-    // Цель
     ctx.font = 'italic 14px Arial';
     ctx.fillStyle = '#f59e0b';
     ctx.fillText('🎯 Достигни 500 очков для сюрприза!', canvas.width / 2, 410);
@@ -515,7 +478,6 @@ function jump() {
         player.velocity = player.jumpPower;
         player.ducking = false;
         audioManager.play('jump');
-        console.log('🦘 Прыжок!');
     }
 }
 
@@ -534,8 +496,6 @@ function duck(start) {
 function startGame() {
     if (gameRunning) return;
     
-    console.log('🚀 Начало игры');
-    
     menuScreen.classList.add('hidden');
     gameRunning = true;
     gamePaused = false;
@@ -543,28 +503,20 @@ function startGame() {
     obstaclesArray = [];
     scoreElement.textContent = 0;
     
-    // Сброс игрока
     player.jumping = false;
     player.ducking = false;
     player.y = player.groundY;
     player.velocity = 0;
     player.currentFrame = 0;
     
-    // Сброс настроек игры
     gameSettings.currentSpeed = gameSettings.baseSpeed;
     gameSettings.spawnTimer = 0;
     gameSettings.lastScoreSound = 0;
     
-    // Запуск видео персонажа
     playerVideo.currentTime = 0;
-    playerVideo.play().catch(e => {
-        console.log('Не удалось запустить видео персонажа:', e);
-    });
+    playerVideo.play().catch(e => {});
     
-    // Запуск музыки
     audioManager.playMusic();
-    
-    // Звук начала игры
     audioManager.play('click');
     
     lastTime = performance.now();
@@ -584,7 +536,6 @@ function togglePause() {
         pauseScreen.classList.add('show');
         pauseScoreElement.textContent = Math.floor(score);
         
-        // Пауза видео и музыки
         playerVideo.pause();
         audioManager.pauseMusic();
         audioManager.play('click');
@@ -593,10 +544,7 @@ function togglePause() {
         lastTime = performance.now();
         animationId = requestAnimationFrame(gameLoop);
         
-        // Возобновление
-        playerVideo.play().catch(e => {
-            console.log('Не удалось возобновить видео:', e);
-        });
+        playerVideo.play().catch(e => {});
         audioManager.resumeMusic();
         audioManager.play('click');
     }
@@ -606,8 +554,6 @@ function togglePause() {
 // ПЕРЕЗАПУСК ИГРЫ
 // ========================================
 function restartGame() {
-    console.log('🔄 Перезапуск игры');
-    
     pauseScreen.classList.remove('show');
     audioManager.play('click');
     startGame();
@@ -617,28 +563,20 @@ function restartGame() {
 // ВОЗВРАТ В МЕНЮ
 // ========================================
 function returnToMenu() {
-    console.log('🏠 Возврат в меню');
-    
     pauseScreen.classList.remove('show');
     gameRunning = false;
     gamePaused = false;
     cancelAnimationFrame(animationId);
     
-    // Сохраняем рекорд
     if (score > highScore) {
         highScore = Math.floor(score);
         localStorage.setItem('gameHighScore', highScore);
-        console.log(`🎉 Новый рекорд: ${highScore}!`);
     }
     
-    // Останавливаем видео и музыку
     playerVideo.pause();
     audioManager.stopMusic();
-    
-    // Звук возврата в меню
     audioManager.play('click');
     
-    // Сбрасываем игру
     initGame();
 }
 
@@ -661,41 +599,29 @@ function gameLoop(currentTime) {
 // ОБНОВЛЕНИЕ ИГРЫ
 // ========================================
 function updateGame(deltaTime) {
-    // Увеличение счета
     score += gameSettings.currentSpeed * 0.1;
     scoreElement.textContent = Math.floor(score);
     
-    // Звук при достижении круглых чисел
     if (Math.floor(score) % 100 === 0 && Math.floor(score) > gameSettings.lastScoreSound) {
         audioManager.play('score');
         gameSettings.lastScoreSound = Math.floor(score);
     }
     
-    // Увеличение скорости
     gameSettings.currentSpeed += gameSettings.speedIncrease;
     
-    // Обновляем игрока
     updatePlayer(deltaTime);
-    
-    // Обновляем препятствия
     updateObstacles(deltaTime);
-    
-    // Обновляем облака
     updateClouds();
     
-    // Движение земли
     groundOffset = (groundOffset - gameSettings.currentSpeed) % 24;
     
-    // Проверка столкновений
     checkCollisions();
     
-    // Проверка на достижение 500 очков
     if (Math.floor(score) >= 500 && !hasShown500Record) {
         showScrimer();
         return;
     }
     
-    // Обновляем рекорд
     if (score > highScore) {
         highScore = Math.floor(score);
         highScoreElement.textContent = `Рекорд: ${highScore}`;
@@ -802,22 +728,16 @@ function checkCollisions() {
 // СКРИМЕР ПРИ 500 ОЧКАХ
 // ========================================
 function showScrimer() {
-    console.log('🎬 Показываем скример на 500 очков!');
-    
-    // Останавливаем игру
     gameRunning = false;
     gamePaused = false;
     cancelAnimationFrame(animationId);
     
-    // Останавливаем видео и музыку
     playerVideo.pause();
     audioManager.stopMusic();
     
-    // Сохраняем, что уже показали скример
     hasShown500Record = true;
     localStorage.setItem('shown500Record', 'true');
     
-    // Создаем модальное окно для скримера
     const scrimerModal = document.createElement('div');
     scrimerModal.id = 'scrimer-modal';
     scrimerModal.style.cssText = `
@@ -833,7 +753,6 @@ function showScrimer() {
         align-items: center;
     `;
     
-    // Сообщение перед скримером
     const warningMsg = document.createElement('div');
     warningMsg.style.cssText = `
         position: absolute;
@@ -855,11 +774,9 @@ function showScrimer() {
     scrimerModal.appendChild(warningMsg);
     document.body.appendChild(scrimerModal);
     
-    // Через 3 секунды показываем скример
     setTimeout(() => {
         warningMsg.remove();
         
-        // Создаем видео элемент для скримера
         const scrimerVideoElement = document.createElement('video');
         scrimerVideoElement.id = 'scrimer-video';
         scrimerVideoElement.style.cssText = `
@@ -870,21 +787,18 @@ function showScrimer() {
         scrimerVideoElement.autoplay = true;
         scrimerVideoElement.controls = false;
         
-        // ТЫ ДОБАВИШЬ СВОЮ ССЫЛКУ ЗДЕСЬ:
+        // ЗДЕСЬ ТЫ ДОБАВИШЬ СВОЮ ССЫЛКУ НА СКРИМЕР
         scrimerVideoElement.src = 'ТВОЯ_ССЫЛКА_НА_СКРИМЕР_ВИДЕО.mp4';
         
         scrimerVideoElement.addEventListener('ended', function() {
             scrimerModal.remove();
             alert('🎊 Отличная работа! Ты достиг 500 очков!\nТеперь продолжай играть!');
-            hasShown500Record = true;
             returnToMenu();
         });
         
         scrimerVideoElement.addEventListener('error', function() {
-            console.log('Ошибка загрузки скримера');
             scrimerModal.remove();
             alert('🎊 Поздравляем! Ты достиг 500 очков!\n(Видео скримера не загрузилось)');
-            hasShown500Record = true;
             returnToMenu();
         });
         
@@ -908,7 +822,6 @@ function showScrimer() {
             scrimerVideoElement.pause();
             scrimerModal.remove();
             alert('🎊 Поздравляем с 500 очками!');
-            hasShown500Record = true;
             returnToMenu();
         });
         
@@ -917,7 +830,6 @@ function showScrimer() {
         
         setTimeout(() => {
             scrimerVideoElement.play().catch(e => {
-                console.log('Не удалось воспроизвести скример:', e);
                 scrimerModal.remove();
                 alert('🎊 500 очков! Так держать!');
                 returnToMenu();
@@ -931,19 +843,14 @@ function showScrimer() {
 // КОНЕЦ ИГРЫ
 // ========================================
 function gameOver() {
-    console.log('💀 Конец игры. Счет:', Math.floor(score));
-    
     gameRunning = false;
     cancelAnimationFrame(animationId);
     
-    // Сохраняем рекорд
     if (score > highScore) {
         highScore = Math.floor(score);
         localStorage.setItem('gameHighScore', highScore);
-        console.log(`🎉 Установлен новый рекорд: ${highScore}!`);
     }
     
-    // Звуки при окончании игры
     audioManager.play('collision');
     setTimeout(() => {
         audioManager.stopMusic();
@@ -1091,9 +998,7 @@ function drawPlayer() {
             
             ctx.restore();
             return;
-        } catch (error) {
-            console.log('Ошибка рисования видео:', error);
-        }
+        } catch (error) {}
     }
     
     drawNightDinosaur();
@@ -1149,7 +1054,6 @@ function drawNightDinosaur() {
 function setupModalControls() {
     if (launchGameBtn) {
         launchGameBtn.addEventListener('click', function() {
-            console.log('🎮 Запуск ночной игры');
             gameModal.classList.add('show');
             document.body.style.overflow = 'hidden';
             initGame();
@@ -1158,7 +1062,6 @@ function setupModalControls() {
     
     if (closeGameBtn) {
         closeGameBtn.addEventListener('click', function() {
-            console.log('❌ Закрытие игры');
             gameModal.classList.remove('show');
             document.body.style.overflow = 'auto';
             
@@ -1192,11 +1095,6 @@ function setupModalControls() {
 // ЗАГРУЗКА СТРАНИЦЫ
 // ========================================
 window.addEventListener('load', function() {
-    console.log('✅ Страница загружена');
-    
     setupModalControls();
     playerVideo.load();
-    
-    console.log('🎮 Игра готова!');
-    console.log('🔊 Система звуков активирована');
 });
