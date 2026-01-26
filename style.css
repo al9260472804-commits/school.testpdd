@@ -856,20 +856,6 @@ canvas {
 ::-webkit-scrollbar {
     width: 10px;
 }
-
-::-webkit-scrollbar-track {
-    background: #1a1a1a;
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #297cd3;
-}
-
 /* Кнопки звука в игре */
 #sound-btn, #music-btn {
     pointer-events: auto;
@@ -904,7 +890,18 @@ canvas {
     margin-top: 5px;
     text-align: center;
 }
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
 
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #297cd3;
+}
 /* Исправления для кнопок */
 .g-button {
     cursor: pointer !important;
@@ -984,7 +981,6 @@ canvas {
     max-height: 90vh;
     overflow-y: auto;
 }
-
 /* Исправления для радиокнопок */
 .g-radio input[type="radio"] {
     position: absolute !important;
@@ -1126,7 +1122,6 @@ canvas {
         margin: 2px 0 !important;
     }
 }
-
 /* Улучшенный дизайн для игры */
 #game-ui {
     background: rgba(15, 23, 42, 0.8);
@@ -1229,7 +1224,6 @@ canvas {
         font-size: 1.8rem;
     }
 }
-
 /* Стили для скримера */
 #scrimer-modal {
     animation: fadeIn 0.3s ease;
@@ -1281,10 +1275,9 @@ canvas {
     font-weight: bold;
     animation: pulse 1s infinite;
 }
-
 /* Ночной фон для игры */
 .game-container {
-    background: linear-gradient(to bottom, #0a0f1a 0%, #131825 70%, #1a202c 100%);
+    background: linear-gradient(to bottom, #0f172a 0%, #1e293b 70%, #334155 100%);
 }
 
 /* Обновленный UI для ночной темы */
@@ -1333,6 +1326,7 @@ canvas {
     transform: scale(1.1);
     box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
 }
+
 
 /* Кнопки в меню (ночная тема) */
 .btn {
@@ -1406,7 +1400,6 @@ canvas {
         padding: 10px;
     }
 }
-
 /* Стили для кнопки звука */
 #sound-toggle-btn {
     transition: all 0.3s ease;
@@ -1459,7 +1452,6 @@ canvas {
     0%, 100% { opacity: 0; }
     20%, 80% { opacity: 1; }
 }
-
 /* Стили для фото в викторине */
 .quiz-photo {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -1512,46 +1504,4 @@ canvas {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-}
-
-/* Еще более темный фон игры */
-.game-container {
-    background: linear-gradient(to bottom, #0a0f1a 0%, #131825 70%, #1a202c 100%);
-}
-
-/* Скрытые сообщения */
-.hidden-message {
-    opacity: 0.1;
-    font-size: 10px;
-    color: #4a5568;
-    text-align: center;
-    margin: 5px 0;
-    transition: opacity 0.3s;
-}
-
-.hidden-message:hover {
-    opacity: 0.7;
-}
-
-/* Еле заметная анимация */
-.subtle-pulse {
-    animation: subtlePulse 4s infinite;
-}
-
-@keyframes subtlePulse {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 0.9; }
-}
-
-/* Скрытые подсказки */
-[title]:hover::after {
-    content: attr(title);
-    position: absolute;
-    background: #1a202c;
-    color: #cbd5e0;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    z-index: 1000;
 }
