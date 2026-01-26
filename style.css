@@ -1505,3 +1505,138 @@ canvas {
     height: 42px;
     border-radius: 50%;
 }
+/* Стили для баннера туалета */
+.toilet-banner {
+    background: linear-gradient(90deg, #ff6b6b, #ffa8a8);
+    color: white;
+    padding: 12px 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    border-bottom: 3px solid #ff4757;
+    animation: pulse 2s infinite;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 1px;
+}
+
+@keyframes pulse {
+    0% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
+    50% { background: linear-gradient(90deg, #ffa8a8, #ff6b6b); }
+    100% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
+}
+
+.yandex-forms-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toilet-icon {
+    font-size: 24px;
+    animation: toilet-bounce 1s infinite alternate;
+}
+
+@keyframes toilet-bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-5px); }
+}
+
+/* Стили для фото в викторине */
+.quiz-photo-container {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(51, 142, 245, 0.1);
+    border-radius: 12px;
+}
+
+.quiz-photo {
+    width: 100%;
+    max-width: 600px;
+    border-radius: 10px;
+    margin: 0 auto 10px;
+    display: block;
+    border: 3px solid #338ef5;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.quiz-inline-photo {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 8px;
+    margin: 15px auto 10px;
+    display: block;
+    border: 2px solid #338ef5;
+}
+
+.road-sign-container {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.road-sign-image {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto 10px;
+    display: block;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #ff6b6b;
+}
+
+.quiz-final-photo {
+    text-align: center;
+    margin: 30px 0;
+    padding: 20px;
+    background: rgba(51, 142, 245, 0.1);
+    border-radius: 12px;
+}
+
+.final-photo {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 10px;
+    margin: 0 auto 15px;
+    display: block;
+    border: 3px solid #338ef5;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.photo-caption {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    margin-top: 5px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.ad-photo {
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 2px solid #ff6b6b;
+}
+
+.toilet-hashtag {
+    margin-left: 10px;
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+.modal-photo {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.success-photo {
+    width: 100%;
+    max-width: 200px;
+    border-radius: 10px;
+    margin: 0 auto;
+    border: 2px solid #338ef5;
+}
