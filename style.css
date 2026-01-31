@@ -63,10 +63,6 @@ body {
     color: inherit;
 }
 
-.Header-UserSection .yc-user-dropdown-avatar {
-    cursor: pointer;
-}
-
 /* Блок запуска игры */
 .game-launcher {
     background-color: var(--card-bg);
@@ -280,18 +276,6 @@ body {
     display: none;
 }
 
-/* Изображение в вопросе */
-.QuestionLayout-Image {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    border: 1px solid #444;
-    background-color: #2a2a2a;
-    padding: 10px;
-    display: block;
-}
-
 /* Кнопка отправки */
 .SurveyPage-Buttons {
     margin-top: 32px;
@@ -353,19 +337,6 @@ body {
 }
 
 /* Рекламные блоки */
-.TopLineAdv {
-    margin-bottom: 20px;
-}
-
-.TopLineAdv-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-    color: #999;
-}
-
 .SideColumnAdv {
     margin-left: 20px;
     min-width: 240px;
@@ -381,19 +352,6 @@ body {
     color: #999;
 }
 
-/* Вспомогательные классы */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
 /* Стили для модального окна с игрой */
 .game-modal {
     display: none;
@@ -407,12 +365,6 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 .game-modal.show {
@@ -428,12 +380,6 @@ body {
     overflow: hidden;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
     border: 3px solid #2d3748;
-    animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
 }
 
 .game-modal-header {
@@ -463,7 +409,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s;
 }
 
 .close-btn:hover {
@@ -475,13 +420,11 @@ body {
     position: relative;
     width: 100%;
     height: 400px;
-    background-color: #2d3748;
     overflow: hidden;
 }
 
 canvas {
     display: block;
-    background-color: #2d3748;
     width: 100%;
     height: 100%;
 }
@@ -538,16 +481,6 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: all 0.2s;
-}
-
-#pause-btn:hover {
-    background: rgba(45, 55, 72, 0.9);
-    transform: scale(1.05);
-}
-
-#pause-btn:active {
-    transform: scale(0.95);
 }
 
 #menu-screen, #pause-screen {
@@ -571,7 +504,6 @@ canvas {
     font-size: 2rem;
     margin-bottom: 20px;
     color: #fff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 #menu-screen .score-display, #pause-screen .score-display {
@@ -580,7 +512,6 @@ canvas {
     background: rgba(26, 32, 44, 0.7);
     padding: 12px 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     color: #f6e05e;
     border: 2px solid #4a5568;
 }
@@ -605,44 +536,16 @@ canvas {
     width: 90%;
     max-width: 250px;
     cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    outline: none;
     border: 2px solid #2c5282;
 }
 
 .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    background: linear-gradient(to right, #2b6cb0, #3182ce);
 }
 
 .btn:active {
     transform: translateY(1px);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-#new-record {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(to right, #d69e2e, #f6e05e);
-    color: #1a202c;
-    font-size: 1.5rem;
-    font-weight: bold;
-    padding: 15px 25px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    z-index: 12;
-    display: none;
-    text-align: center;
-    animation: fadeIn 0.5s, pulse 1s infinite;
-    border: 2px solid #b7791f;
-}
-
-#new-record.show {
-    display: block;
 }
 
 .game-instructions {
@@ -780,10 +683,6 @@ canvas {
     .SurveyPage-Name {
         font-size: 24px;
     }
-    
-    .game-modal-header h2 {
-        font-size: 1.2rem;
-    }
 }
 
 @media (max-width: 480px) {
@@ -798,713 +697,8 @@ canvas {
     #high-score {
         font-size: 0.9rem;
     }
-    
-    .game-modal-header h2 {
-        font-size: 1.1rem;
-    }
-    
-    #menu-screen h3, #pause-screen h3 {
-        font-size: 1.5rem;
-    }
 }
 
-/* Анимация загрузки */
-.loading {
-    display: inline-block;
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: var(--primary-color);
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Сообщения об ошибках и успехе */
-.error-message {
-    background-color: rgba(255, 0, 0, 0.1);
-    border: 1px solid #ff3333;
-    color: #ff6666;
-    padding: 10px;
-    border-radius: 8px;
-    margin: 10px 0;
-    display: none;
-}
-
-.error-message.show {
-    display: block;
-}
-
-.success-message {
-    background-color: rgba(0, 255, 0, 0.1);
-    border: 1px solid #33ff33;
-    color: #66ff66;
-    padding: 10px;
-    border-radius: 8px;
-    margin: 10px 0;
-    display: none;
-}
-
-.success-message.show {
-    display: block;
-}
-
-/* Кастомный скроллбар */
-::-webkit-scrollbar {
-    width: 10px;
-}
-/* Кнопки звука в игре */
-#sound-btn, #music-btn {
-    pointer-events: auto;
-    background: rgba(26, 32, 44, 0.9);
-    border: 2px solid #4a5568;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    font-size: 1rem;
-    color: #fff;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.2s;
-}
-
-#sound-btn:hover, #music-btn:hover {
-    background: rgba(45, 55, 72, 0.9);
-    transform: scale(1.05);
-}
-
-#sound-btn:active, #music-btn:active {
-    transform: scale(0.95);
-}
-
-/* Эффекты звука в меню */
-.sound-instruction {
-    color: #f6e05e;
-    font-size: 12px;
-    margin-top: 5px;
-    text-align: center;
-}
-::-webkit-scrollbar-track {
-    background: #1a1a1a;
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #297cd3;
-}
-/* Исправления для кнопок */
-.g-button {
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-}
-
-.g-button:hover {
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-}
-
-.g-button:active {
-    transform: translateY(0) !important;
-}
-
-/* Фикс для радио-кнопок */
-.g-control-label {
-    cursor: pointer;
-    user-select: none;
-}
-
-.g-radio input[type="radio"] {
-    cursor: pointer;
-}
-
-/* Улучшение отображения модальных окон */
-.modal-overlay.show {
-    display: flex !important;
-    opacity: 1 !important;
-}
-
-.game-modal.show {
-    display: flex !important;
-    opacity: 1 !important;
-}
-
-/* Анимация кнопки запуска игры */
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(51, 142, 245, 0.7);
-    }
-    70% {
-        transform: scale(1.05);
-        box-shadow: 0 0 0 10px rgba(51, 142, 245, 0);
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(51, 142, 245, 0);
-    }
-}
-
-/* Улучшение отзывчивости */
-@media (max-width: 768px) {
-    .game-container {
-        height: 300px !important;
-    }
-    
-    #game-ui {
-        padding: 10px !important;
-    }
-    
-    .game-modal-content {
-        margin: 10px !important;
-        max-height: 90vh !important;
-    }
-}
-
-/* Улучшение доступности */
-:focus {
-    outline: 2px solid #338ef5 !important;
-    outline-offset: 2px !important;
-}
-
-/* Улучшение скролла */
-.game-modal-content {
-    max-height: 90vh;
-    overflow-y: auto;
-}
-/* Исправления для радиокнопок */
-.g-radio input[type="radio"] {
-    position: absolute !important;
-    opacity: 1 !important;
-    width: 20px !important;
-    height: 20px !important;
-    cursor: pointer !important;
-    z-index: 10 !important;
-    pointer-events: auto !important;
-}
-
-.g-control-label {
-    cursor: pointer !important;
-    position: relative !important;
-    transition: all 0.3s ease !important;
-}
-
-.g-control-label:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-.g-control-label__indicator {
-    position: relative !important;
-    z-index: 5 !important;
-}
-
-/* Выделение выбранной радиокнопки */
-.g-control-label.selected {
-    background-color: rgba(51, 142, 245, 0.2) !important;
-    border: 2px solid #338ef5 !important;
-    border-radius: 8px !important;
-}
-
-/* Анимации */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(51, 142, 245, 0.7); }
-    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(51, 142, 245, 0); }
-    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(51, 142, 245, 0); }
-}
-
-/* Кнопка запуска игры */
-#launch-game-btn:disabled {
-    opacity: 0.5 !important;
-    cursor: not-allowed !important;
-    animation: none !important;
-}
-
-#launch-game-btn.enabled {
-    opacity: 1 !important;
-    cursor: pointer !important;
-    animation: pulse 2s infinite !important;
-}
-
-/* Сообщение о новом рекорде */
-#new-record {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0);
-    background-size: 300% 300%;
-    color: white;
-    font-size: 1.8rem;
-    font-weight: bold;
-    padding: 20px 40px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    z-index: 20;
-    display: none;
-    text-align: center;
-    animation: gradient 3s ease infinite, fadeIn 0.5s ease;
-    border: 3px solid white;
-}
-
-#new-record.show {
-    display: block;
-}
-
-@keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Медленная анимация облаков */
-.cloud {
-    animation: cloudMove 20s linear infinite;
-}
-
-@keyframes cloudMove {
-    from { transform: translateX(100%); }
-    to { transform: translateX(-100%); }
-}
-
-/* Улучшенный скролл */
-::-webkit-scrollbar {
-    width: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: #1a1a1a;
-    border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #338ef5;
-    border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #297cd3;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 480px) {
-    .game-container {
-        height: 250px !important;
-    }
-    
-    #game-ui {
-        padding: 5px !important;
-    }
-    
-    #score {
-        font-size: 1.2rem !important;
-    }
-    
-    #high-score {
-        font-size: 0.8rem !important;
-    }
-    
-    .game-instructions p {
-        font-size: 0.7rem !important;
-        margin: 2px 0 !important;
-    }
-}
-/* Улучшенный дизайн для игры */
-#game-ui {
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid #334155;
-    padding: 12px 20px;
-}
-
-.score-container {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    border: 2px solid #475569;
-    border-radius: 12px;
-    padding: 10px 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-#score {
-    font-size: 2.2rem;
-    font-weight: 800;
-    background: linear-gradient(to right, #fbbf24, #f59e0b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-#high-score {
-    font-size: 0.9rem;
-    color: #cbd5e1;
-    font-weight: 600;
-}
-
-#pause-btn {
-    background: linear-gradient(135deg, #475569, #334155);
-    border: 2px solid #64748b;
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-    transition: all 0.3s ease;
-}
-
-#pause-btn:hover {
-    background: linear-gradient(135deg, #64748b, #475569);
-    transform: rotate(90deg);
-}
-
-/* Анимация нового рекорда */
-@keyframes recordGlow {
-    0%, 100% { 
-        transform: translate(-50%, -50%) scale(1);
-        box-shadow: 0 0 30px #fbbf24;
-    }
-    50% { 
-        transform: translate(-50%, -50%) scale(1.05);
-        box-shadow: 0 0 50px #f59e0b;
-    }
-}
-
-#new-record {
-    background: linear-gradient(45deg, #f59e0b, #fbbf24, #f59e0b);
-    background-size: 200% 200%;
-    animation: gradientShift 2s ease infinite, recordGlow 1.5s ease-in-out infinite;
-    color: #1e293b;
-    font-size: 2rem;
-    font-weight: 900;
-    padding: 25px 50px;
-    border-radius: 20px;
-    border: 3px solid #ffffff;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Подсветка кнопок в меню */
-.btn {
-    background: linear-gradient(to right, #3b82f6, #1d4ed8);
-    margin: 10px 0;
-    border: 2px solid #60a5fa;
-    transition: all 0.3s ease;
-}
-
-.btn:hover {
-    background: linear-gradient(to right, #1d4ed8, #3b82f6);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-}
-
-/* Адаптивность для видео */
-@media (max-width: 768px) {
-    .player-video {
-        max-width: 100%;
-        height: auto;
-    }
-    
-    #score {
-        font-size: 1.8rem;
-    }
-}
-/* Стили для скримера */
-#scrimer-modal {
-    animation: fadeIn 0.3s ease;
-}
-
-#scrimer-video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-/* Анимация для скримера */
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-
-.shake {
-    animation: shake 0.5s ease-in-out;
-}
-
-/* Темный режим для игры */
-.game-container {
-    background: #f7f7f7;
-}
-
-/* Дополнительные стили для динозавра */
-.dino-leg {
-    animation: run 0.3s infinite alternate;
-}
-
-@keyframes run {
-    from { transform: translateY(0); }
-    to { transform: translateY(-3px); }
-}
-
-/* Стиль для сообщения о скримере */
-.scrimer-warning {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 0, 0, 0.8);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 12px;
-    font-weight: bold;
-    animation: pulse 1s infinite;
-}
-/* Ночной фон для игры */
-.game-container {
-    background: linear-gradient(to bottom, #0f172a 0%, #1e293b 70%, #334155 100%);
-}
-
-/* Обновленный UI для ночной темы */
-#game-ui {
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid #475569;
-}
-
-.score-container {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    border: 2px solid #475569;
-    border-radius: 12px;
-    padding: 10px 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-}
-
-#score {
-    font-size: 2.2rem;
-    font-weight: 800;
-    background: linear-gradient(to right, #fbbf24, #f59e0b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-}
-
-#high-score {
-    font-size: 0.9rem;
-    color: #cbd5e1;
-    font-weight: 600;
-}
-
-#pause-btn {
-    background: linear-gradient(135deg, #475569, #334155);
-    border: 2px solid #64748b;
-    color: #fbbf24;
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
-}
-
-#pause-btn:hover {
-    background: linear-gradient(135deg, #64748b, #475569);
-    transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
-}
-
-
-/* Кнопки в меню (ночная тема) */
-.btn {
-    background: linear-gradient(to right, #1e40af, #1e3a8a);
-    margin: 10px 0;
-    border: 2px solid #3b82f6;
-    color: #e2e8f0;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(30, 64, 175, 0.3);
-}
-
-.btn:hover {
-    background: linear-gradient(to right, #1e3a8a, #1e40af);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5);
-    color: #ffffff;
-}
-
-/* Инструкции игры (ночь) */
-.game-instructions {
-    background: #0f172a;
-    border-top: 2px solid #475569;
-    color: #94a3b8;
-    padding: 15px;
-}
-
-.game-instructions p {
-    margin: 8px 0;
-    font-size: 0.9rem;
-}
-
-/* Скример модалка */
-#scrimer-modal {
-    animation: fadeIn 0.5s ease;
-}
-
-#scrimer-video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-/* Предупреждение перед скримером */
-@keyframes warningPulse {
-    0%, 100% { 
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-    }
-    50% { 
-        transform: translate(-50%, -50%) scale(1.05);
-        opacity: 0.8;
-    }
-}
-
-.scrimer-warning {
-    animation: warningPulse 1s infinite;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .game-container {
-        height: 300px !important;
-    }
-    
-    #score {
-        font-size: 1.8rem;
-    }
-    
-    .game-instructions {
-        font-size: 0.8rem;
-        padding: 10px;
-    }
-}
-/* Стили для кнопки звука */
-#sound-toggle-btn {
-    transition: all 0.3s ease;
-}
-
-#sound-toggle-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-}
-
-#sound-toggle-btn:active {
-    transform: scale(0.95);
-}
-
-/* Убираем стили нового рекорда */
-#new-record {
-    display: none !important;
-}
-
-/* Анимация для звуковых эффектов */
-@keyframes soundWave {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.8; }
-}
-
-.sound-wave {
-    animation: soundWave 0.5s ease;
-}
-
-/* Индикатор звука */
-.sound-indicator {
-    position: absolute;
-    top: 60px;
-    right: 70px;
-    background: rgba(15, 23, 42, 0.9);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 12px;
-    display: none;
-    z-index: 10;
-}
-
-.sound-indicator.show {
-    display: block;
-    animation: fadeInOut 2s ease;
-}
-
-@keyframes fadeInOut {
-    0%, 100% { opacity: 0; }
-    20%, 80% { opacity: 1; }
-}
-/* Стили для фото в викторине */
-.quiz-photo {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.quiz-photo:hover {
-    transform: scale(1.02);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
-
-.photo-caption {
-    color: #94a3b8;
-    font-size: 0.9rem;
-    margin-top: 8px;
-    text-align: center;
-}
-
-/* Адаптивность для фото */
-@media (max-width: 768px) {
-    .quiz-photo {
-        max-width: 100%;
-        margin: 15px 0;
-    }
-    
-    .QuestionMarkup-Column_column_left img {
-        margin-top: 10px !important;
-        max-width: 100% !important;
-    }
-}
-
-/* Анимация для фото */
-@keyframes fadeInPhoto {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.quiz-photo, .QuestionMarkup-Column_column_left img {
-    animation: fadeInPhoto 0.5s ease;
-}
-
-/* Стили для аватара без LA */
-.g-avatar__image-placeholder {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    font-size: 16px !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-}
 /* Стили для баннера туалета */
 .toilet-banner {
     background: linear-gradient(90deg, #ff6b6b, #ffa8a8);
@@ -1514,12 +708,12 @@ canvas {
     font-weight: bold;
     font-size: 18px;
     border-bottom: 3px solid #ff4757;
-    animation: pulse 2s infinite;
+    animation: toiletPulse 2s infinite;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     letter-spacing: 1px;
 }
 
-@keyframes pulse {
+@keyframes toiletPulse {
     0% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
     50% { background: linear-gradient(90deg, #ffa8a8, #ff6b6b); }
     100% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
@@ -1533,145 +727,10 @@ canvas {
 
 .toilet-icon {
     font-size: 24px;
-    animation: toilet-bounce 1s infinite alternate;
+    animation: toiletBounce 1s infinite alternate;
 }
 
-@keyframes toilet-bounce {
-    from { transform: translateY(0); }
-    to { transform: translateY(-5px); }
-}
-
-/* Стили для фото в викторине */
-.quiz-photo-container {
-    text-align: center;
-    margin: 20px 0;
-    padding: 15px;
-    background: rgba(51, 142, 245, 0.1);
-    border-radius: 12px;
-}
-
-.quiz-photo {
-    width: 100%;
-    max-width: 600px;
-    border-radius: 10px;
-    margin: 0 auto 10px;
-    display: block;
-    border: 3px solid #338ef5;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.quiz-inline-photo {
-    width: 100%;
-    max-width: 300px;
-    border-radius: 8px;
-    margin: 15px auto 10px;
-    display: block;
-    border: 2px solid #338ef5;
-}
-
-.road-sign-container {
-    text-align: center;
-    margin: 20px 0;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-}
-
-.road-sign-image {
-    width: 100%;
-    max-width: 200px;
-    margin: 0 auto 10px;
-    display: block;
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    border: 2px solid #ff6b6b;
-}
-
-.quiz-final-photo {
-    text-align: center;
-    margin: 30px 0;
-    padding: 20px;
-    background: rgba(51, 142, 245, 0.1);
-    border-radius: 12px;
-}
-
-.final-photo {
-    width: 100%;
-    max-width: 400px;
-    border-radius: 10px;
-    margin: 0 auto 15px;
-    display: block;
-    border: 3px solid #338ef5;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-}
-
-.photo-caption {
-    text-align: center;
-    color: #94a3b8;
-    font-style: italic;
-    margin-top: 5px;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-.ad-photo {
-    width: 100%;
-    border-radius: 8px;
-    margin-top: 10px;
-    border: 2px solid #ff6b6b;
-}
-
-.toilet-hashtag {
-    margin-left: 10px;
-    color: #ff6b6b;
-    font-weight: bold;
-}
-
-.modal-photo {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.success-photo {
-    width: 100%;
-    max-width: 200px;
-    border-radius: 10px;
-    margin: 0 auto;
-    border: 2px solid #338ef5;
-}
-/* Стили для баннера туалета */
-.toilet-banner {
-    background: linear-gradient(90deg, #ff6b6b, #ffa8a8);
-    color: white;
-    padding: 12px 20px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 18px;
-    border-bottom: 3px solid #ff4757;
-    animation: pulse 2s infinite;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    letter-spacing: 1px;
-}
-
-@keyframes pulse {
-    0% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
-    50% { background: linear-gradient(90deg, #ffa8a8, #ff6b6b); }
-    100% { background: linear-gradient(90deg, #ff6b6b, #ffa8a8); }
-}
-
-.yandex-forms-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.toilet-icon {
-    font-size: 24px;
-    animation: toilet-bounce 1s infinite alternate;
-}
-
-@keyframes toilet-bounce {
+@keyframes toiletBounce {
     from { transform: translateY(0); }
     to { transform: translateY(-5px); }
 }
