@@ -18,6 +18,34 @@ const pauseScoreElement = document.getElementById('pause-score');
 // Модальное окно игры
 const gameModal = document.getElementById('game-modal');
 const closeGameBtn = document.getElementById('close-game-btn');
+const launchGameBtn = document.getElementById('launch-game-btn');
+
+// ========================================
+// ВИДЕО ЭЛЕМЕНТЫ (ТВОИ ФАЙЛЫ)
+// ========================================
+const playerVideo = document.createElement('video');
+playerVideo.src = 'lv_0_20260125005509.mp4'; // Твоё видео динозавра
+playerVideo.loop = true;
+playerVideo.muted = false;
+playerVideo.playsInline = true;
+playerVideo.preload = 'auto';
+
+let videoLoaded = false;
+let videoError = false;
+
+playerVideo.addEventListener('loadeddata', function() {
+    console.log('✅ Видео динозавра загружено!');
+    videoLoaded = true;
+});
+
+playerVideo.addEventListener('error', function() {
+    console.error('❌ Ошибка загрузки видео динозавра');
+    videoError = true;
+    // Показываем сообщение
+    if (menuScreen) {
+        menuScreen.innerHTML += '<p style="color:#f87171;margin-top:10px;">⚠️ Видео не загрузилось, но игра работает!</p>';
+    }
+});
 
 // Глобальные переменные игры
 let gameRunning = false;
@@ -32,15 +60,14 @@ let hasShown300Record = false;
 const player = {
     x: 50,
     y: 0,
-    width: 60,
-    height: 60,
+    width: 80, // Увеличил для видео
+    height: 80,
     jumping: false,
     ducking: false,
     velocity: 0,
     gravity: 0.8,
     jumpPower: -15,
-    groundY: 0,
-    color: '#4CAF50'
+    groundY: 0
 };
 
 // Препятствия и окружение
@@ -103,8 +130,14 @@ function initGame() {
     
     drawMenuScreen();
     setupGameEventListeners();
+    addSoundButton();
     
     console.log('✅ Игра инициализирована!');
+    
+    // Пробуем загрузить видео
+    if (!videoLoaded && !videoError) {
+        playerVideo.load();
+    }
 }
 
 function createStars() {
@@ -116,7 +149,9 @@ function createStars() {
             x: Math.random() * canvas.width,
             y: Math.random() * (canvas.height * 0.7),
             size: Math.random() * 2 + 1,
-            brightness: Math.random() * 0.8 + 0.2
+            brightness: Math.random() * 0.8 + 0.2,
+            twinkleSpeed: Math.random() * 0.02 + 0.01,
+            twinkleOffset: Math.random() * Math.PI * 2
         });
     }
 }
@@ -130,6 +165,43 @@ function createClouds() {
             width: 50 + Math.random() * 80,
             speed: 0.8 + Math.random() * 1.5
         });
+    }
+}
+
+function addSoundButton() {
+    if (document.getElementById('sound-toggle-btn')) return;
+    
+    const soundBtn = document.createElement('button');
+    soundBtn.id = 'sound-toggle-btn';
+    soundBtn.textContent = '🔊';
+    soundBtn.title = 'Включить/выключить звук';
+    soundBtn.style.cssText = `
+        position: absolute;
+        top: 15px;
+        right: 70px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 2px solid #475569;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    `;
+    
+    soundBtn.addEventListener('click', function() {
+        playerVideo.muted = !playerVideo.muted;
+        this.textContent = playerVideo.muted ? '🔇' : '🔊';
+        this.title = playerVideo.muted ? 'Включить звук' : 'Выключить звук';
+    });
+    
+    const gameUI = document.getElementById('game-ui');
+    if (gameUI) {
+        gameUI.appendChild(soundBtn);
     }
 }
 
@@ -166,6 +238,10 @@ function closeGameModal() {
     gameRunning = false;
     gamePaused = false;
     if (animationId) cancelAnimationFrame(animationId);
+    
+    // Останавливаем видео
+    playerVideo.pause();
+    playerVideo.currentTime = 0;
 }
 
 function handleKeyDown(e) {
@@ -242,6 +318,14 @@ function startGame() {
     gameSettings.spawnTimer = 0;
     gameSettings.lastScoreSound = 0;
     
+    // Запускаем видео динозавра
+    if (videoLoaded) {
+        playerVideo.currentTime = 0;
+        playerVideo.play().catch(e => {
+            console.log('Ошибка воспроизведения видео:', e);
+        });
+    }
+    
     lastTime = performance.now();
     animationId = requestAnimationFrame(gameLoop);
 }
@@ -257,10 +341,22 @@ function togglePause() {
             pauseScreen.classList.add('show');
             if (pauseScoreElement) pauseScoreElement.textContent = Math.floor(score);
         }
+        
+        // Пауза видео
+        if (videoLoaded) {
+            playerVideo.pause();
+        }
     } else {
         if (pauseScreen) pauseScreen.classList.remove('show');
         lastTime = performance.now();
         animationId = requestAnimationFrame(gameLoop);
+        
+        // Возобновляем видео
+        if (videoLoaded) {
+            playerVideo.play().catch(e => {
+                console.log('Ошибка возобновления видео:', e);
+            });
+        }
     }
 }
 
@@ -278,6 +374,12 @@ function returnToMenu() {
     if (score > highScore) {
         highScore = Math.floor(score);
         localStorage.setItem('gameHighScore', highScore);
+    }
+    
+    // Останавливаем видео
+    if (videoLoaded) {
+        playerVideo.pause();
+        playerVideo.currentTime = 0;
     }
     
     initGame();
@@ -340,10 +442,10 @@ function updatePlayer(deltaTime) {
     }
     
     if (player.ducking && !player.jumping) {
-        player.height = 35;
-        player.y = player.groundY + 25;
+        player.height = 40;
+        player.y = player.groundY + 40;
     } else if (!player.jumping) {
-        player.height = 60;
+        player.height = 80;
         player.y = player.groundY;
     }
 }
@@ -398,10 +500,10 @@ function updateClouds() {
 
 function checkCollisions() {
     for (let obstacle of obstaclesArray) {
-        const playerRight = player.x + player.width - 15;
-        const playerLeft = player.x + 15;
-        const playerBottom = player.y + player.height - 10;
-        const playerTop = player.y + 10;
+        const playerRight = player.x + player.width - 20;
+        const playerLeft = player.x + 20;
+        const playerBottom = player.y + player.height - 20;
+        const playerTop = player.y + 20;
         
         const obstacleRight = obstacle.x + obstacle.width - 8;
         const obstacleLeft = obstacle.x + 8;
@@ -420,13 +522,19 @@ function checkCollisions() {
 }
 
 // ========================================
-// СКРИМЕР ПРИ 300 ОЧКАХ (ПРОСТАЯ ВЕРСИЯ)
+// СКРИМЕР ПРИ 300 ОЧКАХ (С ВИДЕО)
 // ========================================
 
 function show300Scrimer() {
     gameRunning = false;
     gamePaused = false;
     if (animationId) cancelAnimationFrame(animationId);
+    
+    // Останавливаем видео динозавра
+    if (videoLoaded) {
+        playerVideo.pause();
+        playerVideo.currentTime = 0;
+    }
     
     // Создаем модальное окно для скримера
     const scrimerModal = document.createElement('div');
@@ -445,58 +553,123 @@ function show300Scrimer() {
         flex-direction: column;
     `;
     
-    const scaryText = document.createElement('div');
-    scaryText.style.cssText = `
-        color: #ff0000;
-        font-size: 72px;
+    const warningMsg = document.createElement('div');
+    warningMsg.style.cssText = `
+        color: #fff;
+        font-size: 42px;
         font-weight: bold;
         text-align: center;
-        text-shadow: 0 0 30px #ff0000;
+        z-index: 10000;
+        background: rgba(255, 0, 0, 0.8);
+        padding: 30px 50px;
+        border-radius: 15px;
+        animation: pulse 0.5s infinite alternate;
         margin-bottom: 30px;
+        border: 5px solid white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     `;
-    scaryText.textContent = '💀 СКРИМЕР! 💀';
+    warningMsg.textContent = '🎉 300 ОЧКОВ!\nСКРИМЕР...';
     
-    const message = document.createElement('div');
-    message.style.cssText = `
-        color: white;
-        font-size: 24px;
-        text-align: center;
-        margin-bottom: 30px;
+    const countdown = document.createElement('div');
+    countdown.style.cssText = `
+        color: #ff6b6b;
+        font-size: 64px;
+        font-weight: bold;
+        margin: 20px 0;
+        text-shadow: 0 0 20px #ff0000;
     `;
-    message.textContent = '🎊 Поздравляем с 300 очками!';
+    countdown.textContent = '3';
+    
+    scrimerModal.appendChild(warningMsg);
+    scrimerModal.appendChild(countdown);
+    document.body.appendChild(scrimerModal);
+    
+    let count = 3;
+    const countdownInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdown.textContent = count;
+        } else {
+            clearInterval(countdownInterval);
+            showVideoScrimer(scrimerModal);
+        }
+    }, 1000);
+}
+
+function showVideoScrimer(modal) {
+    modal.innerHTML = '';
+    
+    // Создаем элемент видео для скримера
+    const scrimerVideo = document.createElement('video');
+    scrimerVideo.src = 'scrimer.mp4'; // Твоё видео скримера
+    scrimerVideo.autoplay = true;
+    scrimerVideo.controls = false;
+    scrimerVideo.muted = false;
+    scrimerVideo.playsInline = true;
+    scrimerVideo.style.cssText = `
+        max-width: 100%;
+        max-height: 100%;
+        background: #000;
+    `;
     
     const skipBtn = document.createElement('button');
-    skipBtn.textContent = '✕ ЗАКРЫТЬ';
+    skipBtn.textContent = '✕ ПРОПУСТИТЬ';
     skipBtn.style.cssText = `
+        position: absolute;
+        top: 20px;
+        right: 20px;
         background: rgba(255,0,0,0.8);
         color: white;
         border: none;
-        font-size: 20px;
-        padding: 15px 30px;
+        font-size: 18px;
+        padding: 10px 20px;
         border-radius: 10px;
         cursor: pointer;
         font-weight: bold;
-        border: 3px solid white;
+        border: 2px solid white;
+        z-index: 10000;
     `;
+    
     skipBtn.addEventListener('click', function() {
-        scrimerModal.remove();
+        scrimerVideo.pause();
+        modal.remove();
         alert('🎊 Поздравляем с 300 очками! Игра окончена!');
         returnToMenu();
     });
     
-    scrimerModal.appendChild(scaryText);
-    scrimerModal.appendChild(message);
-    scrimerModal.appendChild(skipBtn);
-    document.body.appendChild(scrimerModal);
+    modal.appendChild(scrimerVideo);
+    modal.appendChild(skipBtn);
     
-    // Автоматическое закрытие через 10 секунд
+    // Обработка окончания видео
+    scrimerVideo.addEventListener('ended', function() {
+        modal.remove();
+        alert('🎊 Поздравляем с 300 очками! Игра окончена!');
+        returnToMenu();
+    });
+    
+    // Обработка ошибки загрузки видео
+    scrimerVideo.addEventListener('error', function() {
+        modal.innerHTML = `
+            <div style="color: white; text-align: center; padding: 50px;">
+                <h1 style="font-size: 48px; color: #ff0000; margin-bottom: 20px;">💀 СКРИМЕР! 💀</h1>
+                <p style="font-size: 24px; margin-bottom: 30px;">🎊 Поздравляем с 300 очками!</p>
+                <p style="font-size: 18px; color: #ccc; margin-bottom: 40px;">(Видео скримера не загрузилось)</p>
+                <button onclick="this.parentElement.parentElement.remove(); alert('🎊 Поздравляем с 300 очками!'); returnToMenu()" 
+                        style="background: #338ef5; color: white; border: none; padding: 15px 30px; font-size: 20px; border-radius: 10px; cursor: pointer;">
+                    НАЗАД В МЕНЮ
+                </button>
+            </div>
+        `;
+    });
+    
+    // Автоматическое закрытие через 30 секунд (на всякий случай)
     setTimeout(() => {
-        if (document.body.contains(scrimerModal)) {
-            scrimerModal.remove();
+        if (document.body.contains(modal)) {
+            modal.remove();
             alert('🎊 Поздравляем с 300 очками! Игра окончена!');
             returnToMenu();
         }
-    }, 10000);
+    }, 30000);
 }
 
 function gameOver() {
@@ -506,6 +679,12 @@ function gameOver() {
     if (score > highScore) {
         highScore = Math.floor(score);
         localStorage.setItem('gameHighScore', highScore);
+    }
+    
+    // Останавливаем видео
+    if (videoLoaded) {
+        playerVideo.pause();
+        playerVideo.currentTime = 0;
     }
     
     setTimeout(() => {
@@ -548,7 +727,18 @@ function drawMenuScreen() {
     ctx.fillStyle = '#94a3b8';
     ctx.fillText('ПРОБЕЛ или СТРЕЛКА ↑ - Прыжок', canvas.width / 2, 270);
     ctx.fillText('СТРЕЛКА ↓ - Пригнуться', canvas.width / 2, 300);
-    ctx.fillText('P - Пауза', canvas.width / 2, 330);
+    ctx.fillText('P - Пауза | M - Звук', canvas.width / 2, 330);
+    
+    // Показываем статус видео
+    if (videoError) {
+        ctx.fillStyle = '#f87171';
+        ctx.font = '12px Arial';
+        ctx.fillText('⚠️ Видео не загрузилось', canvas.width / 2, 380);
+    } else if (videoLoaded) {
+        ctx.fillStyle = '#10b981';
+        ctx.font = '12px Arial';
+        ctx.fillText('✅ Видео готово', canvas.width / 2, 380);
+    }
 }
 
 function drawGame() {
@@ -581,8 +771,12 @@ function drawNightSky() {
     ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
     
+    const time = Date.now() * 0.001;
     for (let star of stars) {
-        ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+        const twinkle = Math.sin(time * star.twinkleSpeed + star.twinkleOffset) * 0.3 + 0.7;
+        const alpha = star.brightness * twinkle;
+        
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
@@ -653,7 +847,38 @@ function drawObstacles() {
 }
 
 function drawPlayer() {
-    ctx.fillStyle = player.color;
+    // Пробуем нарисовать видео, если оно загружено
+    if (videoLoaded && playerVideo.readyState >= 2) {
+        try {
+            // Сохраняем состояние контекста
+            ctx.save();
+            
+            // Добавляем анимацию прыжка
+            let drawY = player.y;
+            if (player.jumping) {
+                // Эффект прыжка
+                const jumpBounce = Math.sin(Date.now() / 50) * 2;
+                drawY += jumpBounce;
+            }
+            
+            // Рисуем видео
+            ctx.drawImage(playerVideo, player.x, drawY, player.width, player.height);
+            
+            // Восстанавливаем состояние контекста
+            ctx.restore();
+            return;
+        } catch (error) {
+            console.log('Ошибка отрисовки видео:', error);
+            videoError = true;
+        }
+    }
+    
+    // Если видео не загружено, рисуем простого динозавра
+    drawFallbackDinosaur();
+}
+
+function drawFallbackDinosaur() {
+    ctx.fillStyle = '#4CAF50';
     
     if (player.ducking) {
         // Пригнувшийся динозавр
@@ -709,4 +934,52 @@ function drawPlayer() {
         for (let i = 0; i < 5; i++) {
             ctx.fillStyle = i % 2 === 0 ? '#3b8c3b' : '#4CAF50';
             ctx.beginPath();
-            ctx.moveTo(player.x + 15 + i * 10, player.y
+            ctx.moveTo(player.x + 15 + i * 10, player.y);
+            ctx.lineTo(player.x + 20 + i * 10, player.y - 15);
+            ctx.lineTo(player.x + 25 + i * 10, player.y);
+            ctx.fill();
+        }
+    }
+}
+
+// ========================================
+// ЗАГРУЗКА СТРАНИЦЫ
+// ========================================
+
+window.addEventListener('load', function() {
+    console.log('Страница загружена');
+    
+    // Проверяем элементы
+    if (!canvas) {
+        console.error('Canvas элемент не найден!');
+        return;
+    }
+    
+    if (!gameModal) {
+        console.error('Модальное окно игры не найдено!');
+        return;
+    }
+    
+    // Загружаем видео заранее
+    playerVideo.load();
+    
+    // Инициализируем обработчики
+    if (launchGameBtn) {
+        launchGameBtn.addEventListener('click', function() {
+            console.log('Кнопка запуска игры нажата');
+            gameModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            
+            // Даем время на отрисовку модального окна
+            setTimeout(() => {
+                initGame();
+            }, 100);
+        });
+    }
+    
+    if (closeGameBtn) {
+        closeGameBtn.addEventListener('click', closeGameModal);
+    }
+    
+    console.log('Игра готова к запуску');
+});
