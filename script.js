@@ -10,6 +10,310 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalCloseBtn = document.querySelector('.modal-close-btn');
     const modalOkBtn = document.getElementById('modal-ok-btn');
     const quizResult = document.getElementById('quiz-result');
+    const launchGameBtn = document.getElementById('launch-game-btn');
+    
+    // Загрузка картинок с запасными ссылками
+    const imageUrls = {
+        quiz1: [
+            'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_1280.png'
+        ],
+        quiz2: [
+            'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+            'https://cdn.pixabay.com/photo/2013/07/13/11/44/traffic-light-158826_1280.png'
+        ],
+        final: [
+            'https://images.unsplash.com/photo-1599159340654-f5bb2bfd5d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            'https://cdn.pixabay.com/photo/2017/02/15/10/57/police-2068270_1280.jpg'
+        ]
+    };
+    
+    // Пробуем загрузить картинки
+    setTimeout(() => {
+        loadImages();
+    }, 1000);
+    
+    function loadImages() {
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+            img.onerror = function() {
+                console.log('Ошибка загрузки картинки:', this.src);
+                // Можно добавить запасную картинку
+                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QREQgVmljdG9yaWE8L3RleHQ+PC9zdmc+';
+            };
+        });
+    }
+    
+    // ФИКС: Добавляем обработчики для радиокнопок
+    const radioInputs = document.querySelectorAll('.radio-input');
+    radioInputs.forEach(radio => {
+        radio.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+        
+        radio.addEventListener('change', function() {
+            console.log('Радиокнопка изменена:', this.name, this.value);
+            highlightSelectedRadio(this);
+        });
+    });
+    
+    // Функция выделения выбранной радиокнопки
+    function highlightSelectedRadio(selectedRadio) {
+        const groupName = selectedRadio.name;
+        const allRadios = document.querySelectorAll(`input[name="${groupName}"]`);
+        
+        allRadios.forEach(radio => {
+            const label = radio.closest('.g-control-label');
+            if (label) {
+                label.style.backgroundColor = '';
+                label.style.borderRadius = '8px';
+                label.style.padding = '8px 12px';
+                label.style.transition = 'background-color 0.3s';
+            }
+        });
+        
+        const selectedLabel = selectedRadio.closest('.g-control-label');
+        if (selectedLabel) {
+            selectedLabel.style.backgroundColor = 'rgba(51, 142, 245, 0.2)';
+            selectedLabel.style.border = '2px solid #338ef5';
+        }
+    }
+    
+    // Обработка отправки викторины
+    submitBtn.addEventListener('click', function() {
+        console.log('Отправка викторины...');
+        
+        if (!validateForm()) {
+            return;
+        }
+        
+        const formData = {
+            fio: fioInput.value.trim(),
+            question1: document.querySelector('input[name="question1"]:checked')?.value,
+            question2: document.querySelector('input[name="question2"]:checked')?.value,
+            timestamp: new Date().toLocaleString('ru-RU')
+        };
+        
+        console.log('Данные викторины:', formData);
+        
+        const correctAnswers = {
+            question1: 'no',
+            question2: 'enter-prohibited'
+        };
+        
+        let score = 0;
+        if (formData.question1 === correctAnswers.question1) score++;
+        if (formData.question2 === correctAnswers.question2) score++;
+        
+        showResults(formData, score, correctAnswers);
+    });
+    
+    // Валидация формы
+    function validateForm() {
+        let isValid = true;
+        let errorMessage = '';
+        
+        if (!fioInput.value.trim()) {
+            isValid = false;
+            errorMessage = 'Пожалуйста, введите ФИО и класс';
+            fioInput.focus();
+        }
+        else if (!document.querySelector('input[name="question1"]:checked')) {
+            isValid = false;
+            errorMessage = 'Пожалуйста, ответьте на первый вопрос';
+        }
+        else if (!document.querySelector('input[name="question2"]:checked')) {
+            isValid = false;
+            errorMessage = 'Пожалуйста, ответьте на второй вопрос';
+        }
+        
+        if (!isValid) {
+            showError(errorMessage);
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Показать ошибку
+    function showError(message) {
+        let errorEl = document.querySelector('.form-error');
+        if (!errorEl) {
+            errorEl = document.createElement('div');
+            errorEl.className = 'form-error';
+            errorEl.style.cssText = `
+                background: rgba(255, 0, 0, 0.1);
+                border: 1px solid #ff3333;
+                color: #ff6666;
+                padding: 12px;
+                border-radius: 8px;
+                margin: 10px 0;
+                text-align: center;
+                animation: fadeIn 0.3s ease;
+            `;
+            submitBtn.parentNode.insertBefore(errorEl, submitBtn);
+        }
+        
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+        
+        setTimeout(() => {
+            errorEl.style.display = 'none';
+        }, 5000);
+    }
+    
+    // Показать результаты
+    function showResults(formData, score, correctAnswers) {
+        const totalQuestions = Object.keys(correctAnswers).length;
+        const percentage = Math.round((score / totalQuestions) * 100);
+        
+        const details = `
+            <strong>Результаты:</strong><br>
+            ✅ Правильных ответов: ${score} из ${totalQuestions} (${percentage}%)<br><br>
+            <strong>Правильные ответы:</strong><br>
+            1. Если светофор сломан и мигает желтым, пешеход должен убедиться в безопасности, но уступить дорогу всем транспортным средствам. Ответ: <strong>Нет</strong><br>
+            2. Знак означает: <strong>Въезд запрещен</strong>
+        `;
+        
+        quizResult.innerHTML = details;
+        
+        successModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        
+        const quizResults = JSON.parse(localStorage.getItem('quizResults') || '[]');
+        quizResults.push({
+            ...formData,
+            score,
+            percentage,
+            date: new Date().toISOString()
+        });
+        localStorage.setItem('quizResults', JSON.stringify(quizResults));
+        
+        // Активируем кнопку запуска игры
+        setTimeout(() => {
+            if (launchGameBtn) {
+                launchGameBtn.disabled = false;
+                launchGameBtn.style.animation = 'pulse 2s infinite';
+                launchGameBtn.style.opacity = '1';
+                launchGameBtn.style.cursor = 'pointer';
+                launchGameBtn.classList.add('enabled');
+                
+                // Добавляем обработчик запуска игры
+                launchGameBtn.addEventListener('click', function() {
+                    console.log('Запуск игры...');
+                    const gameModal = document.getElementById('game-modal');
+                    if (gameModal) {
+                        gameModal.classList.add('show');
+                        document.body.style.overflow = 'hidden';
+                        
+                        // Инициализируем игру
+                        if (typeof initGame === 'function') {
+                            initGame();
+                        } else {
+                            console.error('Функция initGame не найдена!');
+                            // Показываем сообщение об ошибке
+                            alert('Игра не загрузилась. Пожалуйста, обновите страницу.');
+                        }
+                    }
+                });
+            }
+        }, 500);
+    }
+    
+    // Закрытие модального окна
+    function closeSuccessModal() {
+        successModal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+    
+    modalCloseBtn.addEventListener('click', closeSuccessModal);
+    modalOkBtn.addEventListener('click', closeSuccessModal);
+    
+    successModal.addEventListener('click', function(e) {
+        if (e.target === successModal) {
+            closeSuccessModal();
+        }
+    });
+    
+    // Обработка кнопки обратной связи
+    feedbackBtn.addEventListener('click', function() {
+        alert('Спасибо за обратную связь! Ваше мнение очень важно для нас.');
+    });
+    
+    // Подсветка обязательных полей при фокусе
+    const requiredInputs = document.querySelectorAll('[required]');
+    requiredInputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.style.boxShadow = '0 0 0 3px rgba(51, 142, 245, 0.3)';
+            this.style.borderColor = '#338ef5';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.style.boxShadow = '';
+            this.style.borderColor = '#444';
+        });
+    });
+    
+    // Автосохранение
+    fioInput.addEventListener('input', function() {
+        localStorage.setItem('quizFIO', this.value);
+    });
+    
+    // Восстановление сохраненных данных
+    const savedFIO = localStorage.getItem('quizFIO');
+    if (savedFIO) {
+        fioInput.value = savedFIO;
+    }
+    
+    const savedQuiz = localStorage.getItem('quizResults');
+    if (savedQuiz) {
+        try {
+            const lastQuiz = JSON.parse(savedQuiz)[0];
+            if (lastQuiz) {
+                if (lastQuiz.question1) {
+                    const radio1 = document.querySelector(`input[name="question1"][value="${lastQuiz.question1}"]`);
+                    if (radio1) {
+                        radio1.checked = true;
+                        highlightSelectedRadio(radio1);
+                    }
+                }
+                if (lastQuiz.question2) {
+                    const radio2 = document.querySelector(`input[name="question2"][value="${lastQuiz.question2}"]`);
+                    if (radio2) {
+                        radio2.checked = true;
+                        highlightSelectedRadio(radio2);
+                    }
+                }
+            }
+        } catch (e) {
+            console.log('Ошибка восстановления данных:', e);
+        }
+    }
+    
+    // Установка текущего года
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+    
+    // Изначально блокируем кнопку запуска игры
+    if (launchGameBtn) {
+        launchGameBtn.disabled = true;
+        launchGameBtn.style.opacity = '0.5';
+        launchGameBtn.style.cursor = 'not-allowed';
+        launchGameBtn.style.animation = 'none';
+    }
+    
+    console.log('✅ Система викторины готова к работе!');
+});// Обработка формы викторины
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script.js загружен!');
+    
+    // Элементы DOM
+    const submitBtn = document.getElementById('submit-quiz-btn');
+    const fioInput = document.getElementById('fio-input');
+    const feedbackBtn = document.getElementById('feedback-btn');
+    const successModal = document.getElementById('success-modal');
+    const modalCloseBtn = document.querySelector('.modal-close-btn');
+    const modalOkBtn = document.getElementById('modal-ok-btn');
+    const quizResult = document.getElementById('quiz-result');
     
     // ФИКС: Добавляем обработчики для радиокнопок
     const radioInputs = document.querySelectorAll('.radio-input');
