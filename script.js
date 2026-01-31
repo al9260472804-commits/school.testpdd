@@ -12,38 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const quizResult = document.getElementById('quiz-result');
     const launchGameBtn = document.getElementById('launch-game-btn');
     
-    // Загрузка картинок с запасными ссылками
-    const imageUrls = {
-        quiz1: [
-            'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-            'https://cdn.pixabay.com/photo/2016/11/18/23/38/child-1837375_1280.png'
-        ],
-        quiz2: [
-            'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-            'https://cdn.pixabay.com/photo/2013/07/13/11/44/traffic-light-158826_1280.png'
-        ],
-        final: [
-            'https://images.unsplash.com/photo-1599159340654-f5bb2bfd5d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-            'https://cdn.pixabay.com/photo/2017/02/15/10/57/police-2068270_1280.jpg'
-        ]
-    };
-    
-    // Пробуем загрузить картинки
-    setTimeout(() => {
-        loadImages();
-    }, 1000);
-    
-    function loadImages() {
-        const images = document.querySelectorAll('img');
-        images.forEach(img => {
-            img.onerror = function() {
-                console.log('Ошибка загрузки картинки:', this.src);
-                // Можно добавить запасную картинку
-                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QREQgVmljdG9yaWE8L3RleHQ+PC9zdmc+';
-            };
-        });
-    }
-    
     // ФИКС: Добавляем обработчики для радиокнопок
     const radioInputs = document.querySelectorAll('.radio-input');
     radioInputs.forEach(radio => {
@@ -197,25 +165,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 launchGameBtn.style.opacity = '1';
                 launchGameBtn.style.cursor = 'pointer';
                 launchGameBtn.classList.add('enabled');
-                
-                // Добавляем обработчик запуска игры
-                launchGameBtn.addEventListener('click', function() {
-                    console.log('Запуск игры...');
-                    const gameModal = document.getElementById('game-modal');
-                    if (gameModal) {
-                        gameModal.classList.add('show');
-                        document.body.style.overflow = 'hidden';
-                        
-                        // Инициализируем игру
-                        if (typeof initGame === 'function') {
-                            initGame();
-                        } else {
-                            console.error('Функция initGame не найдена!');
-                            // Показываем сообщение об ошибке
-                            alert('Игра не загрузилась. Пожалуйста, обновите страницу.');
-                        }
-                    }
-                });
             }
         }, 500);
     }
@@ -299,11 +248,63 @@ document.addEventListener('DOMContentLoaded', function() {
         launchGameBtn.style.opacity = '0.5';
         launchGameBtn.style.cursor = 'not-allowed';
         launchGameBtn.style.animation = 'none';
+        
+        // Добавляем обработчик запуска игры
+        launchGameBtn.addEventListener('click', function() {
+            if (this.disabled) return;
+            
+            console.log('Запуск игры...');
+            const gameModal = document.getElementById('game-modal');
+            if (gameModal) {
+                gameModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                
+                // Даем время на отрисовку модального окна
+                setTimeout(() => {
+                    if (typeof initGame === 'function') {
+                        initGame();
+                    } else {
+                        console.error('Функция initGame не найдена!');
+                        alert('Игра не загрузилась. Пожалуйста, обновите страницу.');
+                    }
+                }, 100);
+            }
+        });
     }
     
     console.log('✅ Система викторины готова к работе!');
-});// Обработка формы викторины
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Script.js загружен!');
+});
+
+// Утилиты для работы с формой
+const FormUtils = {
+    // Проверка email (если понадобится)
+    validateEmail: function(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    },
     
-  
+    // Форматирование текста
+    capitalizeWords: function(str) {
+        return str.split(' ').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        ).join(' ');
+    },
+    
+    // Очистка формы
+    clearForm: function() {
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            input.value = '';
+        });
+        
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.checked = false;
+            const label = radio.closest('.g-control-label');
+            if (label) {
+                label.style.backgroundColor = '';
+                label.style.border = 'none';
+            }
+        });
+        
+        localStorage.removeItem('quizFIO');
+    }
+};
