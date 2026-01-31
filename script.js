@@ -308,3 +308,24 @@ const FormUtils = {
         localStorage.removeItem('quizFIO');
     }
 };
+// В вашем script.js найдите строку, где вызывается initGame() и замените её:
+
+// Вместо:
+setTimeout(() => {
+    initGame();
+}, 100);
+
+// Сделайте:
+setTimeout(() => {
+    // Проверяем, существует ли функция initGame
+    if (typeof initGame === 'function') {
+        initGame();
+    } else {
+        console.error('Функция initGame не найдена! Проверьте загрузку game.js');
+        // Альтернативная инициализация или показ ошибки
+        if (gameModal) {
+            gameModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+}, 100);
