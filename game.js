@@ -20,44 +20,7 @@ const gameModal = document.getElementById('game-modal');
 const closeGameBtn = document.getElementById('close-game-btn');
 const launchGameBtn = document.getElementById('launch-game-btn');
 
-// ========================================
-// СИСТЕМА ЗВУКОВ (без файлов - просто заглушки)
-// ========================================
-const audioManager = {
-    enabled: true,
-    
-    init: function() {
-        // Просто инициализируем без файлов
-    },
-    
-    play: function(soundName) {
-        if (!this.enabled) return;
-        // Заглушка для звуков
-    },
-    
-    playMusic: function() {
-        if (!this.enabled) return;
-    },
-    
-    pauseMusic: function() {
-        // Заглушка
-    },
-    
-    stopMusic: function() {
-        // Заглушка
-    },
-    
-    toggleSound: function() {
-        this.enabled = !this.enabled;
-        localStorage.setItem('soundEnabled', this.enabled);
-        return this.enabled;
-    }
-};
-
-// Массив звезд для фона
-let stars = [];
-
-// Состояние игры
+// Глобальные переменные игры
 let gameRunning = false;
 let gamePaused = false;
 let score = 0;
@@ -81,9 +44,10 @@ const player = {
     color: '#4CAF50'
 };
 
-// Препятствия
+// Препятствия и окружение
 let obstaclesArray = [];
 let clouds = [];
+let stars = [];
 let groundOffset = 0;
 
 // Настройки игры
@@ -98,63 +62,53 @@ const gameSettings = {
 };
 
 // ========================================
-// ИНИЦИАЛИЗАЦИЯ ИГРЫ
+// ОСНОВНЫЕ ФУНКЦИИ ИГРЫ
 // ========================================
+
 function initGame() {
     console.log('🎮 Инициализация игры...');
+    
+    if (!canvas) {
+        console.error('Canvas не найден!');
+        return;
+    }
     
     const container = document.querySelector('.game-container');
     if (!container) return;
     
     canvas.width = container.clientWidth;
-    canvas.height = container.height || 400;
+    canvas.height = container.clientHeight || 400;
     
-    createStars();
-    
+    // Инициализация элементов
     player.groundY = canvas.height - player.height - 10;
     player.y = player.groundY;
     
     highScore = parseInt(localStorage.getItem('gameHighScore')) || 0;
-    highScoreElement.textContent = `Рекорд: ${highScore}`;
-    menuHighScoreElement.textContent = highScore;
+    if (highScoreElement) highScoreElement.textContent = `Рекорд: ${highScore}`;
+    if (menuHighScoreElement) menuHighScoreElement.textContent = highScore;
     
     gameSettings.currentSpeed = gameSettings.baseSpeed;
     gameSettings.spawnTimer = 0;
-    gameSettings.lastScoreSound = 0;
     
-    clouds = [];
-    for (let i = 0; i < 4; i++) {
-        clouds.push({
-            x: Math.random() * canvas.width * 2,
-            y: 30 + Math.random() * 100,
-            width: 50 + Math.random() * 80,
-            speed: 0.8 + Math.random() * 1.5
-        });
-    }
+    // Создание окружения
+    createStars();
+    createClouds();
     
     obstaclesArray = [];
     score = 0;
-    scoreElement.textContent = 0;
+    if (scoreElement) scoreElement.textContent = 0;
     hasShown300Record = false;
     
-    menuScreen.classList.remove('hidden');
-    pauseScreen.classList.remove('show');
-    
-    audioManager.init();
-    
-    const soundEnabled = localStorage.getItem('soundEnabled');
-    if (soundEnabled !== null) {
-        audioManager.enabled = soundEnabled === 'true';
-    }
+    if (menuScreen) menuScreen.classList.remove('hidden');
+    if (pauseScreen) pauseScreen.classList.remove('show');
     
     drawMenuScreen();
     setupGameEventListeners();
     addSoundButton();
+    
+    console.log('✅ Игра инициализирована!');
 }
 
-// ========================================
-// СОЗДАНИЕ ЗВЕЗД
-// ========================================
 function createStars() {
     stars = [];
     const starCount = 100;
@@ -171,168 +125,60 @@ function createStars() {
     }
 }
 
-// ========================================
-// ДОБАВЛЕНИЕ КНОПКИ ЗВУКА
-// ========================================
+function createClouds() {
+    clouds = [];
+    for (let i = 0; i < 4; i++) {
+        clouds.push({
+            x: Math.random() * canvas.width * 2,
+            y: 30 + Math.random() * 100,
+            width: 50 + Math.random() * 80,
+            speed: 0.8 + Math.random() * 1.5
+        });
+    }
+}
+
 function addSoundButton() {
-    if (document.getElementById('sound-toggle-btn')) return;
-    
-    const soundBtn = document.createElement('button');
-    soundBtn.id = 'sound-toggle-btn';
-    soundBtn.textContent = audioManager.enabled ? '🔊' : '🔇';
-    soundBtn.title = audioManager.enabled ? 'Выключить звук' : 'Включить звук';
-    soundBtn.style.cssText = `
-        position: absolute;
-        top: 15px;
-        right: 70px;
-        background: rgba(15, 23, 42, 0.9);
-        border: 2px solid #475569;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        color: white;
-        font-size: 18px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-    `;
-    
-    soundBtn.addEventListener('click', function() {
-        const enabled = audioManager.toggleSound();
-        this.textContent = enabled ? '🔊' : '🔇';
-        this.title = enabled ? 'Выключить звук' : 'Включить звук';
-    });
-    
-    const gameUI = document.getElementById('game-ui');
-    if (gameUI) {
-        gameUI.appendChild(soundBtn);
-    }
-}
-
-// ========================================
-// РИСОВАНИЕ МЕНЮ
-// ========================================
-function drawMenuScreen() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    drawNightSky();
-    
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = 'bold 28px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('🦕 Бегущий динозавр', canvas.width / 2, 80);
-    
-    ctx.font = '16px Arial';
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillText('Достигни 300 очков и получи скример!', canvas.width / 2, 120);
-    
-    ctx.font = 'bold 24px Arial';
-    ctx.fillStyle = '#fbbf24';
-    ctx.fillText(`🏆 Рекорд: ${highScore}`, canvas.width / 2, 180);
-    
-    ctx.font = 'bold 18px Arial';
-    ctx.fillStyle = '#f87171';
-    ctx.fillText('⚠️ 300 очков = СКРИМЕР!', canvas.width / 2, 220);
-    
-    ctx.font = '14px Arial';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText('ПРОБЕЛ или СТРЕЛКА ↑ - Прыжок', canvas.width / 2, 270);
-    ctx.fillText('СТРЕЛКА ↓ - Пригнуться', canvas.width / 2, 300);
-    ctx.fillText('P - Пауза', canvas.width / 2, 330);
-    ctx.fillText('M - Вкл/Выкл звук', canvas.width / 2, 360);
-}
-
-// ========================================
-// РИСОВАНИЕ НОЧНОГО НЕБА
-// ========================================
-function drawNightSky() {
-    const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.7);
-    skyGradient.addColorStop(0, '#0f172a');
-    skyGradient.addColorStop(0.5, '#1e293b');
-    skyGradient.addColorStop(1, '#334155');
-    ctx.fillStyle = skyGradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
-    
-    drawStars();
-    drawMoon();
-}
-
-function drawStars() {
-    const time = Date.now() * 0.001;
-    
-    for (let star of stars) {
-        const twinkle = Math.sin(time * star.twinkleSpeed + star.twinkleOffset) * 0.3 + 0.7;
-        const alpha = star.brightness * twinkle;
-        
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-function drawMoon() {
-    ctx.fillStyle = '#fef3c7';
-    ctx.beginPath();
-    ctx.arc(canvas.width - 100, 80, 30, 0, Math.PI * 2);
-    ctx.fill();
-    
-    const moonGlow = ctx.createRadialGradient(
-        canvas.width - 100, 80, 30,
-        canvas.width - 100, 80, 60
-    );
-    moonGlow.addColorStop(0, 'rgba(254, 243, 199, 0.5)');
-    moonGlow.addColorStop(1, 'rgba(254, 243, 199, 0)');
-    
-    ctx.fillStyle = moonGlow;
-    ctx.beginPath();
-    ctx.arc(canvas.width - 100, 80, 60, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-// ========================================
-// НАСТРОЙКА ОБРАБОТЧИКОВ
-// ========================================
-function setupGameEventListeners() {
-    startBtn.addEventListener('click', startGame);
-    pauseBtn.addEventListener('click', togglePause);
-    resumeBtn.addEventListener('click', togglePause);
-    restartBtn.addEventListener('click', restartGame);
-    menuBtn.addEventListener('click', returnToMenu);
-    
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
-    
-    canvas.addEventListener('click', function(e) {
-        if (!gameRunning || gamePaused) return;
-        const rect = canvas.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        
-        if (clickX > canvas.width / 2) {
-            jump();
-        } else {
-            duck(true);
-            setTimeout(() => duck(false), 300);
-        }
-    });
+    // Простая заглушка для кнопки звука
 }
 
 // ========================================
 // УПРАВЛЕНИЕ ИГРОЙ
 // ========================================
+
+function setupGameEventListeners() {
+    if (startBtn) startBtn.addEventListener('click', startGame);
+    if (pauseBtn) pauseBtn.addEventListener('click', togglePause);
+    if (resumeBtn) resumeBtn.addEventListener('click', togglePause);
+    if (restartBtn) restartBtn.addEventListener('click', restartGame);
+    if (menuBtn) menuBtn.addEventListener('click', returnToMenu);
+    if (closeGameBtn) closeGameBtn.addEventListener('click', closeGameModal);
+    
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+    
+    canvas.addEventListener('click', handleCanvasClick);
+    
+    // Обработка клика вне модального окна
+    if (gameModal) {
+        gameModal.addEventListener('click', function(e) {
+            if (e.target === gameModal) {
+                closeGameModal();
+            }
+        });
+    }
+}
+
+function closeGameModal() {
+    if (gameModal) gameModal.classList.remove('show');
+    document.body.style.overflow = 'auto';
+    gameRunning = false;
+    gamePaused = false;
+    if (animationId) cancelAnimationFrame(animationId);
+}
+
 function handleKeyDown(e) {
     if (e.code === 'KeyP' || e.code === 'Escape') {
         togglePause();
-        return;
-    }
-    
-    if (e.code === 'KeyM') {
-        const soundBtn = document.getElementById('sound-toggle-btn');
-        if (soundBtn) {
-            soundBtn.click();
-        }
         return;
     }
     
@@ -353,6 +199,19 @@ function handleKeyUp(e) {
     }
 }
 
+function handleCanvasClick(e) {
+    if (!gameRunning || gamePaused) return;
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    
+    if (clickX > canvas.width / 2) {
+        jump();
+    } else {
+        duck(true);
+        setTimeout(() => duck(false), 300);
+    }
+}
+
 function jump() {
     if (!player.jumping && gameRunning && !gamePaused) {
         player.jumping = true;
@@ -368,17 +227,18 @@ function duck(start) {
 }
 
 // ========================================
-// ЗАПУСК ИГРЫ
+// ИГРОВОЙ ПРОЦЕСС
 // ========================================
+
 function startGame() {
     if (gameRunning) return;
     
-    menuScreen.classList.add('hidden');
+    if (menuScreen) menuScreen.classList.add('hidden');
     gameRunning = true;
     gamePaused = false;
     score = 0;
     obstaclesArray = [];
-    scoreElement.textContent = 0;
+    if (scoreElement) scoreElement.textContent = 0;
     hasShown300Record = false;
     
     player.jumping = false;
@@ -394,9 +254,6 @@ function startGame() {
     animationId = requestAnimationFrame(gameLoop);
 }
 
-// ========================================
-// ПАУЗА ИГРЫ
-// ========================================
 function togglePause() {
     if (!gameRunning) return;
     
@@ -404,31 +261,27 @@ function togglePause() {
     
     if (gamePaused) {
         cancelAnimationFrame(animationId);
-        pauseScreen.classList.add('show');
-        pauseScoreElement.textContent = Math.floor(score);
+        if (pauseScreen) {
+            pauseScreen.classList.add('show');
+            if (pauseScoreElement) pauseScoreElement.textContent = Math.floor(score);
+        }
     } else {
-        pauseScreen.classList.remove('show');
+        if (pauseScreen) pauseScreen.classList.remove('show');
         lastTime = performance.now();
         animationId = requestAnimationFrame(gameLoop);
     }
 }
 
-// ========================================
-// ПЕРЕЗАПУСК ИГРЫ
-// ========================================
 function restartGame() {
-    pauseScreen.classList.remove('show');
+    if (pauseScreen) pauseScreen.classList.remove('show');
     startGame();
 }
 
-// ========================================
-// ВОЗВРАТ В МЕНЮ
-// ========================================
 function returnToMenu() {
-    pauseScreen.classList.remove('show');
+    if (pauseScreen) pauseScreen.classList.remove('show');
     gameRunning = false;
     gamePaused = false;
-    cancelAnimationFrame(animationId);
+    if (animationId) cancelAnimationFrame(animationId);
     
     if (score > highScore) {
         highScore = Math.floor(score);
@@ -441,6 +294,7 @@ function returnToMenu() {
 // ========================================
 // ИГРОВОЙ ЦИКЛ
 // ========================================
+
 function gameLoop(currentTime) {
     if (!gameRunning || gamePaused) return;
     
@@ -453,12 +307,9 @@ function gameLoop(currentTime) {
     animationId = requestAnimationFrame(gameLoop);
 }
 
-// ========================================
-// ОБНОВЛЕНИЕ ИГРЫ
-// ========================================
 function updateGame(deltaTime) {
     score += gameSettings.currentSpeed * 0.15;
-    scoreElement.textContent = Math.floor(score);
+    if (scoreElement) scoreElement.textContent = Math.floor(score);
     
     // Скример при 300 очках
     if (Math.floor(score) >= 300 && !hasShown300Record) {
@@ -479,8 +330,8 @@ function updateGame(deltaTime) {
     
     if (score > highScore) {
         highScore = Math.floor(score);
-        highScoreElement.textContent = `Рекорд: ${highScore}`;
-        menuHighScoreElement.textContent = highScore;
+        if (highScoreElement) highScoreElement.textContent = `Рекорд: ${highScore}`;
+        if (menuHighScoreElement) menuHighScoreElement.textContent = highScore;
     }
 }
 
@@ -514,8 +365,7 @@ function updateObstacles(deltaTime) {
         const types = [
             { width: 25, height: 45, color: '#2d3748' },
             { width: 35, height: 55, color: '#4a5568' },
-            { width: 50, height: 50, color: '#2c5282' },
-            { width: 40, height: 70, color: '#1e40af' }
+            { width: 50, height: 50, color: '#2c5282' }
         ];
         
         const type = types[Math.floor(Math.random() * types.length)];
@@ -580,12 +430,12 @@ function checkCollisions() {
 // ========================================
 // СКРИМЕР ПРИ 300 ОЧКАХ
 // ========================================
+
 function show300Scrimer() {
     gameRunning = false;
     gamePaused = false;
-    cancelAnimationFrame(animationId);
+    if (animationId) cancelAnimationFrame(animationId);
     
-    // Создаем модальное окно для скримера
     const scrimerModal = document.createElement('div');
     scrimerModal.id = 'scrimer-modal';
     scrimerModal.style.cssText = `
@@ -633,7 +483,6 @@ function show300Scrimer() {
     scrimerModal.appendChild(countdown);
     document.body.appendChild(scrimerModal);
     
-    // Обратный отсчет
     let count = 3;
     const countdownInterval = setInterval(() => {
         count--;
@@ -662,7 +511,7 @@ function showFinalScrimer(modal) {
     scaryText.textContent = '💀 СКРИМЕР! 💀';
     
     const skipBtn = document.createElement('button');
-    skipBtn.textContent = '✕ ПРОПУСТИТЬ СКРИМЕР';
+    skipBtn.textContent = '✕ ПРОПУСТИТЬ';
     skipBtn.style.cssText = `
         background: rgba(255,0,0,0.8);
         color: white;
@@ -683,7 +532,6 @@ function showFinalScrimer(modal) {
     modal.appendChild(scaryText);
     modal.appendChild(skipBtn);
     
-    // Добавляем стиль для тряски
     const style = document.createElement('style');
     style.textContent = `
         @keyframes shake {
@@ -694,7 +542,6 @@ function showFinalScrimer(modal) {
     `;
     modal.appendChild(style);
     
-    // Автоматическое закрытие через 10 секунд
     setTimeout(() => {
         modal.remove();
         alert('🎊 Поздравляем с 300 очками! Игра окончена!');
@@ -702,12 +549,9 @@ function showFinalScrimer(modal) {
     }, 10000);
 }
 
-// ========================================
-// КОНЕЦ ИГРЫ
-// ========================================
 function gameOver() {
     gameRunning = false;
-    cancelAnimationFrame(animationId);
+    if (animationId) cancelAnimationFrame(animationId);
     
     if (score > highScore) {
         highScore = Math.floor(score);
@@ -715,15 +559,51 @@ function gameOver() {
     }
     
     setTimeout(() => {
-        menuScreen.classList.remove('hidden');
-        menuHighScoreElement.textContent = highScore;
+        if (menuScreen) {
+            menuScreen.classList.remove('hidden');
+            if (menuHighScoreElement) menuHighScoreElement.textContent = highScore;
+        }
     }, 1500);
 }
 
 // ========================================
-// ОТРИСОВКА ИГРЫ
+// ОТРИСОВКА
 // ========================================
+
+function drawMenuScreen() {
+    if (!ctx || !canvas) return;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    drawNightSky();
+    
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = 'bold 28px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('🦕 Бегущий динозавр', canvas.width / 2, 80);
+    
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#cbd5e1';
+    ctx.fillText('Достигни 300 очков и получи скример!', canvas.width / 2, 120);
+    
+    ctx.font = 'bold 24px Arial';
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillText(`🏆 Рекорд: ${highScore}`, canvas.width / 2, 180);
+    
+    ctx.font = 'bold 18px Arial';
+    ctx.fillStyle = '#f87171';
+    ctx.fillText('⚠️ 300 очков = СКРИМЕР!', canvas.width / 2, 220);
+    
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText('ПРОБЕЛ или СТРЕЛКА ↑ - Прыжок', canvas.width / 2, 270);
+    ctx.fillText('СТРЕЛКА ↓ - Пригнуться', canvas.width / 2, 300);
+    ctx.fillText('P - Пауза', canvas.width / 2, 330);
+}
+
 function drawGame() {
+    if (!ctx || !canvas) return;
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     drawNightSky();
@@ -732,7 +612,6 @@ function drawGame() {
     drawObstacles();
     drawPlayer();
     
-    // Показываем счетчик до 300 очков
     if (!hasShown300Record) {
         const remaining = 300 - Math.floor(score);
         if (remaining <= 100) {
@@ -742,6 +621,32 @@ function drawGame() {
             ctx.fillText(`🎯 До скримера: ${remaining}`, 15, 35);
         }
     }
+}
+
+function drawNightSky() {
+    const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.7);
+    skyGradient.addColorStop(0, '#0f172a');
+    skyGradient.addColorStop(0.5, '#1e293b');
+    skyGradient.addColorStop(1, '#334155');
+    ctx.fillStyle = skyGradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7);
+    
+    const time = Date.now() * 0.001;
+    for (let star of stars) {
+        const twinkle = Math.sin(time * star.twinkleSpeed + star.twinkleOffset) * 0.3 + 0.7;
+        const alpha = star.brightness * twinkle;
+        
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Луна
+    ctx.fillStyle = '#fef3c7';
+    ctx.beginPath();
+    ctx.arc(canvas.width - 100, 80, 30, 0, Math.PI * 2);
+    ctx.fill();
 }
 
 function drawClouds() {
@@ -762,7 +667,6 @@ function drawGround() {
     ctx.fillStyle = groundGradient;
     ctx.fillRect(0, canvas.height - 25, canvas.width, 25);
     
-    // Рисуем траву
     ctx.fillStyle = '#10b981';
     for (let i = 0; i < canvas.width; i += 25) {
         for (let j = 0; j < 5; j++) {
@@ -773,24 +677,9 @@ function drawGround() {
 
 function drawObstacles() {
     for (let obstacle of obstaclesArray) {
-        // Добавляем свечение для препятствий на высоких скоростях
-        if (gameSettings.currentSpeed > 8) {
-            const glow = ctx.createRadialGradient(
-                obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, 0,
-                obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, obstacle.width * 1.5
-            );
-            glow.addColorStop(0, 'rgba(255, 0, 0, 0.3)');
-            glow.addColorStop(1, 'rgba(255, 0, 0, 0)');
-            
-            ctx.fillStyle = glow;
-            ctx.fillRect(obstacle.x - obstacle.width/2, obstacle.y - obstacle.height/2, 
-                        obstacle.width * 2, obstacle.height * 2);
-        }
-        
         ctx.fillStyle = obstacle.color;
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         
-        // Добавляем детали
         ctx.fillStyle = '#1e293b';
         if (!obstacle.isBird) {
             for (let i = 0; i < 3; i++) {
@@ -802,68 +691,36 @@ function drawObstacles() {
                 );
             }
         } else {
-            // Для птиц
             ctx.fillStyle = '#fbbf24';
             ctx.beginPath();
             ctx.arc(obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2, 
                    obstacle.width/2 - 4, 0, Math.PI * 2);
             ctx.fill();
             
-            // Глаза
             ctx.fillStyle = '#000000';
             ctx.beginPath();
             ctx.arc(obstacle.x + obstacle.width/2 - 6, obstacle.y + obstacle.height/2 - 6, 3, 0, Math.PI * 2);
             ctx.arc(obstacle.x + obstacle.width/2 + 6, obstacle.y + obstacle.height/2 - 6, 3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Клюв
-            ctx.fillStyle = '#f59e0b';
-            ctx.beginPath();
-            ctx.moveTo(obstacle.x + obstacle.width - 5, obstacle.y + obstacle.height/2);
-            ctx.lineTo(obstacle.x + obstacle.width + 8, obstacle.y + obstacle.height/2);
-            ctx.lineTo(obstacle.x + obstacle.width - 5, obstacle.y + obstacle.height/2 + 8);
             ctx.fill();
         }
     }
 }
 
 function drawPlayer() {
-    // Рисуем динозавра
     ctx.fillStyle = player.color;
     
     if (player.ducking) {
-        // Пригнувшийся динозавр
         ctx.fillRect(player.x, player.y, player.width, player.height);
-        
-        // Голова
         ctx.fillRect(player.x + player.width - 15, player.y - 5, 20, 15);
-        
-        // Глаз
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(player.x + player.width - 5, player.y + 3, 4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.fillStyle = '#000000';
-        ctx.beginPath();
-        ctx.arc(player.x + player.width - 5, player.y + 3, 2, 0, Math.PI * 2);
-        ctx.fill();
     } else {
-        // Стоящий динозавр
         ctx.fillRect(player.x, player.y, player.width, player.height);
         
-        // Ноги (анимация бега)
         const legOffset = Math.sin(Date.now() / 100) * 5;
-        
-        // Передняя нога
         ctx.fillRect(player.x + 10, player.y + player.height, 8, -20 + legOffset);
-        // Задняя нога
         ctx.fillRect(player.x + player.width - 18, player.y + player.height, 8, -20 - legOffset);
         
-        // Голова
         ctx.fillRect(player.x + player.width - 10, player.y - 15, 20, 20);
         
-        // Глаз
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(player.x + player.width, player.y - 5, 5, 0, Math.PI * 2);
@@ -874,14 +731,6 @@ function drawPlayer() {
         ctx.arc(player.x + player.width, player.y - 5, 2, 0, Math.PI * 2);
         ctx.fill();
         
-        // Улыбка
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(player.x + player.width, player.y + 2, 5, 0.2 * Math.PI, 0.8 * Math.PI);
-        ctx.stroke();
-        
-        // Спинные пластины
         for (let i = 0; i < 5; i++) {
             ctx.fillStyle = i % 2 === 0 ? '#3b8c3b' : '#4CAF50';
             ctx.beginPath();
@@ -891,63 +740,43 @@ function drawPlayer() {
             ctx.fill();
         }
     }
-    
-    // Добавляем свечение если набрано много очков
-    if (score > 150) {
-        const glowColor = score > 250 ? '#ff0000' : '#ff9900';
-        const glow = ctx.createRadialGradient(
-            player.x + player.width/2, player.y + player.height/2, 0,
-            player.x + player.width/2, player.y + player.height/2, player.width * 1.5
-        );
-        glow.addColorStop(0, glowColor + '40');
-        glow.addColorStop(1, glowColor + '00');
-        
-        ctx.fillStyle = glow;
-        ctx.fillRect(player.x - player.width/2, player.y - player.height/2, 
-                    player.width * 2, player.height * 2);
-    }
-}
-
-// ========================================
-// УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ
-// ========================================
-function setupModalControls() {
-    if (launchGameBtn) {
-        launchGameBtn.addEventListener('click', function() {
-            gameModal.classList.add('show');
-            document.body.style.overflow = 'hidden';
-            initGame();
-        });
-    }
-    
-    if (closeGameBtn) {
-        closeGameBtn.addEventListener('click', function() {
-            gameModal.classList.remove('show');
-            document.body.style.overflow = 'auto';
-            
-            gameRunning = false;
-            gamePaused = false;
-            cancelAnimationFrame(animationId);
-        });
-    }
-    
-    if (gameModal) {
-        gameModal.addEventListener('click', function(e) {
-            if (e.target === gameModal) {
-                gameModal.classList.remove('show');
-                document.body.style.overflow = 'auto';
-                
-                gameRunning = false;
-                gamePaused = false;
-                cancelAnimationFrame(animationId);
-            }
-        });
-    }
 }
 
 // ========================================
 // ЗАГРУЗКА СТРАНИЦЫ
 // ========================================
+
 window.addEventListener('load', function() {
-    setupModalControls();
+    console.log('Страница загружена');
+    
+    // Проверяем элементы
+    if (!canvas) {
+        console.error('Canvas элемент не найден!');
+        return;
+    }
+    
+    if (!gameModal) {
+        console.error('Модальное окно игры не найдено!');
+        return;
+    }
+    
+    // Инициализируем обработчики
+    if (launchGameBtn) {
+        launchGameBtn.addEventListener('click', function() {
+            console.log('Кнопка запуска игры нажата');
+            gameModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            
+            // Даем время на отрисовку модального окна
+            setTimeout(() => {
+                initGame();
+            }, 100);
+        });
+    }
+    
+    if (closeGameBtn) {
+        closeGameBtn.addEventListener('click', closeGameModal);
+    }
+    
+    console.log('Игра готова к запуску');
 });
